@@ -83,7 +83,7 @@ export default function Login() {
                         onChange={(e) => setUsername(e.target.value)}
                     />
                     
-                    <Input 
+                    <Input
                         icon={<FaLock className="text-red-800/50" />} 
                         placeholder="Password" 
                         type="password"
