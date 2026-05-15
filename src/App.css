@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+.scrolls::-webkit-scrollbar {
+    display: none;
+}
+
+.ishadow {
+    box-shadow: inset 0 0 50px #ff0000;
+}
+
+.ishadowmd {
+    box-shadow: inset 0 0 30px #af0000;
+}
