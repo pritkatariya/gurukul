@@ -10,6 +10,9 @@ import {
     FaGraduationCap
 } from "react-icons/fa";
 import Dropdown from "./DropDown";
+import LinkButton from "../commen/Link-button";
+import { GoHomeFill } from "react-icons/go";
+import { Link } from "react-router-dom";
 
 interface NavbarProps {
     isCollapsed: boolean;
@@ -49,7 +52,6 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
                   }
                 `}</style>
 
-                {/* સાઇડબાર નાનો હોય ત્યારે હેડિંગ ટેક્સ્ટ હાઇડ કરો */}
                 {!isCollapsed && (
                     <p className="text-xs font-bold tracking-wider text-red-100 px-2 mb-1 truncate">
                         Admin Management
@@ -58,7 +60,6 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
 
                 <div className="w-full flex flex-col gap-2">
 
-                    {/* 1. Admin Controls */}
                     <Dropdown
                         icon={<FaUserTie />}
                         arrowicon={<IoMdArrowDroprightCircle />}
@@ -67,29 +68,30 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
                         onToggle={() => handleToggle("admin-1")}
                         isCollapsed={isCollapsed}
                     >
-                        <button className="flex items-center gap-2 w-full text-left cursor-pointer text-sm font-medium text-red-900 hover:bg-red-800/10 p-2.5 rounded-xl transition-colors">
+                        <Link to={`/deshbord/new-admin-create`} className="flex items-center gap-2 w-full text-left cursor-pointer text-sm font-medium text-red-900 hover:bg-red-800/10 p-2.5 rounded-xl transition-colors">
                             <FaUserPlus className="text-red-800/70 text-base shrink-0" />
                             <span>Create New Admin</span>
-                        </button>
+                        </Link>
                         <button className="flex items-center gap-2 w-full text-left cursor-pointer text-sm font-medium text-red-900 hover:bg-red-800/10 p-2.5 rounded-xl transition-colors">
                             <FaUserPlus className="text-red-800/70 text-base shrink-0" />
                             <span>Create Department</span>
                         </button>
-                        <button className="flex items-center gap-2 w-full text-left cursor-pointer text-sm font-medium text-red-900 hover:bg-red-800/10 p-2.5 rounded-xl transition-colors">
+                        <Link to={`/deshbord/new-user-create`} className="flex items-center gap-2 w-full text-left cursor-pointer text-sm font-medium text-red-900 hover:bg-red-800/10 p-2.5 rounded-xl transition-colors">
                             <FaUserPlus className="text-red-800/70 text-base shrink-0" />
                             <span>Add New Sevak</span>
-                        </button>
-                        <button className="flex items-center gap-2 w-full text-left cursor-pointer text-sm font-medium text-red-900 hover:bg-red-800/10 p-2.5 rounded-xl transition-colors">
+                        </Link>
+                        <Link to={`/deshbord/new-roll-create`} className="flex items-center gap-2 w-full text-left cursor-pointer text-sm font-medium text-red-900 hover:bg-red-800/10 p-2.5 rounded-xl transition-colors">
                             <FaUsersCog className="text-red-800/70 text-base shrink-0" />
                             <span>Manage Roles</span>
-                        </button>
+                        </Link>
                         <button className="flex items-center gap-2 w-full text-left cursor-pointer text-sm font-medium text-red-900 hover:bg-red-800/10 p-2.5 rounded-xl transition-colors">
                             <FaKey className="text-red-800/70 text-base shrink-0" />
                             <span>Security & Permissions</span>
                         </button>
                     </Dropdown>
 
-                    {/* 2. G-Vesion */}
+                    <LinkButton To="/deshbord" text="Dashboard" icon={<GoHomeFill />} className={`w-`}/>
+
                     <Dropdown
                         icon={<FaTv />}
                         arrowicon={<IoMdArrowDroprightCircle />}
@@ -183,6 +185,12 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
                     </Dropdown>
 
                 </div>
+
+                {!isCollapsed && (
+                    <p className="text-xs font-bold tracking-wider text-red-100 px-2 mb-1 truncate">
+                        Admin Management
+                    </p>
+                )}
             </div>
         </div>
     );

@@ -5,22 +5,65 @@ import '../App.css';
 import Input from "../Components/commen/Input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const navigat = useNavigate()
+    const navigate = useNavigate();
 
     const preventDefault = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!username.trim() || !password.trim()) {
+            toast.error('Please enter both username and password');
+            return;
+        }
+
         if (username === 'super-admin' && password === 'admin123') {
-            navigat("/deshbord")
+            toast.success('Super Admin Login Successful! 🎉');
+            localStorage.setItem('user', JSON.stringify({ username: 'super-admin', role: 'super_admin' }));
+            navigate("/deshbord");
+            return;
+        }
+
+        try {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username, 
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                toast.success('Login Successful! 🎉');
+                
+                // લોકલ સ્ટોરેજમાં યુઝર સેવ કરવા માટે
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                // ડેશબોર્ડ પર રીડાયરેક્ટ કરો
+                navigate("/deshbord");
+            } else {
+                toast.error(data.message || 'Invalid credentials');
+            }
+        } catch (error) {
+            console.error("Login Error:", error);
+            toast.error('Server is not connected or offline');
         }
     }
 
     return (
         <div className="w-screen min-h-screen flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-20 overflow-hidden relative selection:bg-red-200 p-6 scrollbar-hide">
 
+            {/* Background Animated Blobs */}
             <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
                 <motion.div
                     animate={{ x: [0, 50, 0], y: [0, 30, 0], scale: [1, 1.1, 1] }}
@@ -34,6 +77,7 @@ export default function Login() {
                 />
             </div>
 
+            {/* Grid Overlay */}
             <div
                 className="fixed inset-0 -z-20 opacity-[0.05] pointer-events-none"
                 style={{
@@ -45,6 +89,7 @@ export default function Login() {
                 }}
             />
 
+            {/* Left Box (Logo & Heading) */}
             <motion.div
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -62,6 +107,7 @@ export default function Login() {
                 </div>
             </motion.div>
 
+            {/* Right Box (Login Form) */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -93,7 +139,7 @@ export default function Login() {
                         onChange={(e) => setPassword(e.target.value)}
                     />
 
-                    <button className="w-full h-16 mt-4 rounded-2xl bg-red-800 text-white font-black text-lg flex items-center justify-center gap-3 shadow-[0_10px_25px_rgba(153,27,27,0.3)] hover:shadow-[0_15px_30px_rgba(153,27,27,0.4)] hover:-translate-y-1 active:scale-95 transition-all duration-300">
+                    <button type="submit" className="w-full h-16 mt-4 rounded-2xl bg-red-800 text-white font-black text-lg flex items-center justify-center gap-3 shadow-[0_10px_25px_rgba(153,27,27,0.3)] hover:shadow-[0_15px_30px_rgba(153,27,27,0.4)] hover:-translate-y-1 active:scale-95 transition-all duration-300">
                         ENTER
                         <FaArrowRight className="text-sm" />
                     </button>

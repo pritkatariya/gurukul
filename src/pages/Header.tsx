@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { FaGlobe, FaChevronDown, FaUserCircle, FaBars } from "react-icons/fa";
 import Logo from "../assets/gurukul logo.png";
+import { toast } from "sonner";
 
 interface HeaderProps {
   onMenuClick?: () => void; // મોબાઈલ મેનુ ઓપન કરવાનું ફંક્શન
@@ -27,7 +28,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
     <div className="w-full h-full flex items-center rounded-2xl bg-red-800 justify-between select-none p-2 pl-3 pr-3 shadow-md shadow-gray-950">
       
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* 🍔 મોબાઈલ મેનુ બટન: આ માત્ર md સાઇઝથી નાની સ્ક્રીન પર જ દેખાશે */}
         <button 
           onClick={onMenuClick}
           className="md:hidden w-9 h-9 rounded-xl bg-red-100 text-red-800 headerinset flex justify-center items-center shrink-0 cursor-pointer active:scale-95 transition-transform"
@@ -83,7 +83,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </div>
           <div className="flex flex-col text-left pr-0.5 sm:flex">
             <span className="text-[11px] sm:text-xs font-bold text-red-800 tracking-wide leading-tight">Admin User</span>
-            <span className="text-[9px] font-medium text-red-800/50">Super Admin</span>
+            <span className="text-[9px] font-medium text-red-800/50" onClick={() => {toast.success("your super Admin")}}>Super Admin</span>
           </div>
         </div>
 
