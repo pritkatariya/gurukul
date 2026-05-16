@@ -14,7 +14,6 @@ import SwaminarayanSound from "../assets/jay-swaminarayan.mp3";
 
 export default function Overview() {
     const [loading, setLoading] = useState(true);
-    const [audioAllowed, setAudioAllowed] = useState(false);
 
     useEffect(() => {
         const audio = new Audio(SwaminarayanSound);
@@ -54,7 +53,6 @@ export default function Overview() {
 
         audio.play()
             .then(() => {
-                setAudioAllowed(true);
             })
             .catch((error) => {
                 console.log("Audio play failed:", error);
@@ -162,7 +160,7 @@ export default function Overview() {
                 <div className="fixed top-0 left-0 w-full z-50 p-2 md:p-4">
                     <header className="w-full mx-auto rounded-2xl shadow-xl md:rounded-3xl h-16 md:h-20 bg-red-800 flex justify-between items-center px-4 md:px-8 border border-white/10 backdrop-blur-sm">
                         <div className="flex items-center gap-3 md:gap-4">
-                            <div className="flex items-center justify-center bg-gradient-to-tl from-red-700/70 to-gray-200/70 border border-white/20 rounded-xl w-10 h-10 md:w-12 md:h-12 shadow-inner">
+                            <div className="flex items-center justify-center bg-linear-to-tl from-red-700/70 to-gray-200/70 border border-white/20 rounded-xl w-10 h-10 md:w-12 md:h-12 shadow-inner">
                                 <GiPagoda className="text-xl md:text-2xl text-gray-50" />
                             </div>
                             <h1 className="text-lg md:text-2xl text-white font-bold tracking-tight">
@@ -187,7 +185,7 @@ export default function Overview() {
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            className="w-40 h-40 md:w-48 md:h-48 flex flex-col gap-1 justify-center items-center rounded-[40px] md:rounded-[50px] border-3 border-red-300 bg-gradient-to-tl from-red-800 to-red-600 shadow-2xl"
+                            className="w-40 h-40 md:w-48 md:h-48 flex flex-col gap-1 justify-center items-center rounded-[40px] md:rounded-[50px] border-3 border-red-300 bg-linear-to-tl from-red-800 to-red-600 shadow-2xl"
                         >
                             <GiPagoda className="text-5xl md:text-6xl text-gray-50" />
                             <p className="text-base md:text-xl font-bold text-gray-50 uppercase tracking-widest">Gurukul</p>
@@ -203,21 +201,21 @@ export default function Overview() {
                     {/* ગ્રીડ કેટેગરીઝ કાર્ડ્સ */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-14 w-full max-w-5xl pb-16">
                         <div className="group flex flex-col items-center gap-4">
-                            <div className="w-40 h-40 md:w-44 md:h-44 flex flex-col gap-1 justify-center items-center rounded-[40px] md:rounded-[50px] border-3 border-green-300 bg-gradient-to-tl from-green-600 to-green-400 shadow-xl group-hover:scale-110 transition-all duration-500 group-hover:shadow-green-500/30">
+                            <div className="w-40 h-40 md:w-44 md:h-44 flex flex-col gap-1 justify-center items-center rounded-[40px] md:rounded-[50px] border-3 border-green-300 bg-linear-to-tl from-green-600 to-green-400 shadow-xl group-hover:scale-110 transition-all duration-500 group-hover:shadow-green-500/30">
                                 <GrCloudComputer className="text-4xl md:text-5xl text-gray-50" />
                                 <p className="text-lg font-bold text-gray-50">Vision</p>
                             </div>
                         </div>
 
                         <div className="group flex flex-col items-center gap-4">
-                            <div className="w-40 h-40 md:w-44 md:h-44 flex flex-col gap-1 justify-center items-center rounded-[40px] md:rounded-[50px] border-3 border-blue-300 bg-gradient-to-tl from-blue-600 to-blue-400 shadow-xl group-hover:scale-110 transition-all duration-500 group-hover:shadow-blue-500/30">
+                            <div className="w-40 h-40 md:w-44 md:h-44 flex flex-col gap-1 justify-center items-center rounded-[40px] md:rounded-[50px] border-3 border-blue-300 bg-linear-to-tl from-blue-600 to-blue-400 shadow-xl group-hover:scale-110 transition-all duration-500 group-hover:shadow-blue-500/30">
                                 <BsAppleMusic className="text-4xl md:text-5xl text-gray-50" />
                                 <p className="text-lg font-bold text-gray-50">Music</p>
                             </div>
                         </div>
 
                         <div className="group flex flex-col items-center gap-4 lg:col-span-1 sm:col-span-2 lg:sm:col-span-1">
-                            <div className="w-40 h-40 md:w-44 md:h-44 flex flex-col gap-1 justify-center items-center rounded-[40px] md:rounded-[50px] border-3 border-orange-300 bg-gradient-to-tl from-orange-600 to-orange-400 shadow-xl group-hover:scale-110 transition-all duration-500 group-hover:shadow-orange-500/30 mx-auto">
+                            <div className="w-40 h-40 md:w-44 md:h-44 flex flex-col gap-1 justify-center items-center rounded-[40px] md:rounded-[50px] border-3 border-orange-300 bg-linear-to-tl from-orange-600 to-orange-400 shadow-xl group-hover:scale-110 transition-all duration-500 group-hover:shadow-orange-500/30 mx-auto">
                                 <GiHumanPyramid className="text-4xl md:text-5xl text-gray-50" />
                                 <p className="text-lg font-bold text-gray-50 text-center">Culture</p>
                             </div>
@@ -232,7 +230,7 @@ export default function Overview() {
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
-                        className="w-full lg:w-[60%] h-64 md:h-[400px] rounded-[40px] bg-red-800 shadow-2xl p-4 md:p-6"
+                        className="w-full lg:w-[60%] h-64 md:h-100 rounded-[40px] bg-red-800 shadow-2xl p-4 md:p-6"
                     >
                         <div className="w-full h-full bg-amber-50 overflow-hidden rounded-[30px] border border-red-950/20 shadow-inner">
                             <img src={BhayavadarImg} className="w-full h-full object-cover" alt="Bhayavadar Gurukul Overview" />
@@ -244,7 +242,7 @@ export default function Overview() {
                             initial={{ opacity: 0, x: 20 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            className="w-full h-48 md:h-[190px] rounded-[30px] bg-red-800 p-4 shadow-2xl"
+                            className="w-full h-48 md:h-47.5 rounded-[30px] bg-red-800 p-4 shadow-2xl"
                         >
                             <div className="w-full h-full bg-amber-50 rounded-[20px] overflow-hidden border border-red-950/20 shadow-inner">
                                 <img src={BhayavadarImg} className="w-full h-full object-cover animate-pulse" alt="Gurukul Gallery 1" />
@@ -256,7 +254,7 @@ export default function Overview() {
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: 0.2 }}
-                            className="w-full h-48 md:h-[190px] p-4 rounded-[30px] bg-red-800 shadow-2xl"
+                            className="w-full h-48 md:h-47.5 p-4 rounded-[30px] bg-red-800 shadow-2xl"
                         >
                             <div className="w-full h-full bg-amber-50 overflow-hidden rounded-[20px] border border-red-950/20 shadow-inner">
                                 <img src={BhayavadarImg} className="w-full h-full object-cover" alt="Gurukul Gallery 2" />
