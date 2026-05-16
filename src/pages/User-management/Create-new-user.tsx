@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FaUser, FaSave, FaGraduationCap, FaHashtag, FaBuilding } from "react-icons/fa";
+import { FaUser, FaSave, FaGraduationCap, FaHashtag } from "react-icons/fa";
 import { toast } from "sonner";
 import Input from "../../Components/commen/Input";
 import SGDropdown from "../../Components/commen/SGDropdown";
