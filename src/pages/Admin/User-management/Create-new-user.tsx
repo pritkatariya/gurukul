@@ -2,29 +2,30 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaUser, FaSave, FaGraduationCap, FaHashtag } from "react-icons/fa";
 import { toast } from "sonner";
-import Input from "../../Components/commen/Input";
-import SGDropdown from "../../Components/commen/SGDropdown";
+import Input from "../../../Components/commen/Input";
+import SGDropdown from "../../../Components/commen/SGDropdown";
+import { PiPasswordFill } from "react-icons/pi";
 
 export default function CreateNewUser() {
-    // તમે કહેલી બધી જ ઇન્ફોર્મેશન માટેના સ્ટેટ્સ (ઇમેઇલ/ફોન વગર)
     const [formData, setFormData] = useState({
         fullName: "",
         username: "",
         std: "",
-        rollNumber: "",
+        SUID: "",
+        password: "",
         role: "",
         department: ""
     });
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-    // ફોર્મ વેલિડેશન લોજીક
     const validateForm = (): boolean => {
         const newErrors: { [key: string]: string } = {};
         if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
         if (!formData.username.trim()) newErrors.username = "Username is required";
+        if (!formData.password.trim()) newErrors.password = "Password is required";
         if (!formData.std.trim()) newErrors.std = "Standard (STD) is required";
-        if (!formData.rollNumber.trim()) newErrors.rollNumber = "Roll number is required";
+        if (!formData.SUID.trim()) newErrors.SUID = "Roll number is required";
         if (!formData.role) newErrors.role = "Please select a user role";
         if (!formData.department) newErrors.department = "Please select a department";
 
@@ -41,35 +42,38 @@ export default function CreateNewUser() {
         }
 
         try {
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            if (API_URL.endsWith('/')) {
+                API_URL = API_URL.slice(0, -1);
+            }
 
-            // નોંધ: અહીં પાથ બરાબર ચેક કરો. જો બેકએન્ડના રાઉટરમાં ડાયરેક્ટ '/users/create' હોય તો આ બરાબર છે.
-            const response = await fetch(`${API_URL}/users/create`, {
+            const response = await fetch(`${API_URL}/create/user`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     fullName: formData.fullName,
                     username: formData.username,
+                    password: formData.password,
                     std: formData.std,
-                    rollNumber: parseInt(formData.rollNumber),
-                    userRole: formData.role,      // બેકએન્ડના વેરિએબલ 'userRole' સાથે મેચ કર્યું
+                    rollNumber: parseInt(formData.SUID),
+                    userRole: formData.role,
                     department: formData.department
                 })
             });
 
-            // 404 કે અન્ય એરર આવે તો HTML રિસ્પોન્સ .json() માં ક્રેસ ન થાય તે માટે આ સેફ્ટી ચેક:
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error("Server Error Response:", errorText);
-                toast.error(`Server Error: ${response.status}. Check backend logs.`);
+                toast.error(`Server Error: ${response.status}. Path might be incorrect.`);
                 return;
             }
 
             const data = await response.json();
 
             if (data.success) {
-                toast.success(`User created! Unique ID: ${data.user.id} 🎉`);
-                setFormData({ fullName: "", username: "", std: "", rollNumber: "", role: "", department: "" });
+                // 💡 ટોસ્ટ મેસેજમાં યુઝર આઈડી સાથે જોઈનિંગ ડેટ પણ બતાવશે
+                toast.success(`User created! ID: ${data.user.id}. Joined on: ${data.user.joined_date} 🎉`);
+                setFormData({ fullName: "", username: "", std: "", password: "", SUID: "", role: "", department: "" });
             } else {
                 toast.error(data.message || "Failed to create user");
             }
@@ -92,11 +96,10 @@ export default function CreateNewUser() {
             <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-2xl bg-white shadow-[0_20px_50px_rgba(153,27,27,0.05)] border border-red-100 rounded-[2.5rem] p-6 md:p-10"
+                className="w-full max-w-7xl bg-white shadow-[0_20px_50px_rgba(153,27,27,0.05)] border border-red-100 rounded-[2.5rem] p-6 md:p-10"
             >
                 <form onSubmit={handleSubmit} className="space-y-6">
 
-                    {/* ૨ કોલમ વાળી ઇનપુટ ગ્રીડ */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         {/* Full Name */}
                         <div>
@@ -130,7 +133,24 @@ export default function CreateNewUser() {
                             {errors.username && <p className="text-red-500 text-xs font-semibold mt-1.5 pl-2">⚠️ {errors.username}</p>}
                         </div>
 
-                        {/* STD (ધોરણ) */}
+                        {/* Password */}
+                        <div>
+                            <Input
+                                type="password"
+                                label="Password"
+                                icon={<PiPasswordFill />}
+                                placeholder="Enter secure password"
+                                value={formData.password}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    setFormData({ ...formData, password: e.target.value });
+                                    if (errors.password) setErrors({ ...errors, password: "" });
+                                }}
+                                className={errors.password ? "border-red-500 ring-2 ring-red-50" : ""}
+                            />
+                            {errors.password && <p className="text-red-500 text-xs font-semibold mt-1.5 pl-2">⚠️ {errors.password}</p>}
+                        </div>
+
+                        {/* STD */}
                         <div>
                             <Input
                                 label="Standard (STD)"
@@ -146,22 +166,41 @@ export default function CreateNewUser() {
                             {errors.std && <p className="text-red-500 text-xs font-semibold mt-1.5 pl-2">⚠️ {errors.std}</p>}
                         </div>
 
-                        {/* Roll Number */}
+                        {/* SUID */}
                         <div>
                             <Input
-                                label="Roll Number"
+                                label="SUID"
                                 type="number"
                                 icon={<FaHashtag />}
                                 placeholder="E.g. 45"
-                                value={formData.rollNumber}
+                                value={formData.SUID}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                    setFormData({ ...formData, rollNumber: e.target.value });
-                                    if (errors.rollNumber) setErrors({ ...errors, rollNumber: "" });
+                                    setFormData({ ...formData, SUID: e.target.value });
+                                    if (errors.SUID) setErrors({ ...errors, SUID: "" });
                                 }}
-                                className={errors.rollNumber ? "border-red-500 ring-2 ring-red-50" : ""}
+                                className={errors.SUID ? "border-red-500 ring-2 ring-red-50" : ""}
                             />
-                            {errors.rollNumber && <p className="text-red-500 text-xs font-semibold mt-1.5 pl-2">⚠️ {errors.rollNumber}</p>}
+                            {errors.SUID && <p className="text-red-500 text-xs font-semibold mt-1.5 pl-2">⚠️ {errors.SUID}</p>}
                         </div>
+                    </div>
+
+                    {/* Role Dropdown */}
+                    <div>
+                        <SGDropdown
+                            label="Select Role"
+                            name="role"
+                            value={formData.role}
+                            onChange={(e: { target: { name: string; value: string } }) => {
+                                setFormData({ ...formData, role: e.target.value });
+                                if (errors.role) setErrors({ ...errors, role: "" });
+                            }}
+                            options={[
+                                { value: "admin", label: "admin" },
+                                { value: "department main", label: "department main" },
+                                { value: "user", label: "user" },
+                            ]}
+                            error={errors.role}
+                        />
                     </div>
 
                     {/* Department Dropdown */}
@@ -170,28 +209,6 @@ export default function CreateNewUser() {
                             label="Select Department"
                             name="department"
                             value={formData.department}
-                            // 💡 ટાઇપને React.ChangeEvent ને બદલે direct એક્સેપ્ટ કરો અથવા 'any' કરી દો
-                            onChange={(e: { target: { name: string; value: string } }) => {
-                                setFormData({ ...formData, department: e.target.value });
-                                if (errors.department) setErrors({ ...errors, department: "" });
-                            }}
-                            options={[
-                                { value: "Gurukul Arts", label: "Gurukul Arts" },
-                                { value: "G-Music", label: "G-Music" },
-                                { value: "G-Culcher", label: "G-Culcher" },
-                                { value: "Administration", label: "Administration" }
-                            ]}
-                            error={errors.department}
-                        />
-                    </div>
-
-                    {/* User Role Dropdown */}
-                    <div>
-                        <SGDropdown
-                            label="Select Department"
-                            name="department"
-                            value={formData.department}
-                            // 💡 ટાઇપને React.ChangeEvent ને બદલે direct એક્સેપ્ટ કરો અથવા 'any' કરી દો
                             onChange={(e: { target: { name: string; value: string } }) => {
                                 setFormData({ ...formData, department: e.target.value });
                                 if (errors.department) setErrors({ ...errors, department: "" });
