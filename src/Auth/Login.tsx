@@ -46,10 +46,8 @@ export default function Login() {
             if (response.ok && data.success) {
                 toast.success('Login Successful! 🎉');
                 
-                // લોકલ સ્ટોરેજમાં યુઝર સેવ કરવા માટે
                 localStorage.setItem('user', JSON.stringify(data.user));
                 
-                // ડેશબોર્ડ પર રીડાયરેક્ટ કરો
                 navigate("/deshbord");
             } else {
                 toast.error(data.message || 'Invalid credentials');
