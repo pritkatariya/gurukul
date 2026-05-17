@@ -1,10 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FaUser, FaSave, FaGraduationCap, FaHashtag } from "react-icons/fa";
+import { FaUser, FaSave, FaGraduationCap, FaHashtag, FaCamera } from "react-icons/fa";
 import { toast } from "sonner";
 import Input from "../../../Components/commen/Input";
 import SGDropdown from "../../../Components/commen/SGDropdown";
 import { PiPasswordFill } from "react-icons/pi";
+
+interface RoleOption {
+    value: string;
+    label: string;
+}
 
 export default function CreateNewUser() {
     const [formData, setFormData] = useState({
@@ -17,7 +22,55 @@ export default function CreateNewUser() {
         department: ""
     });
 
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    const [roleOptions, setRoleOptions] = useState<RoleOption[]>([]);
+    const [loadingRoles, setLoadingRoles] = useState<boolean>(true);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+    useEffect(() => {
+        const fetchRolesForDropdown = async () => {
+            try {
+                let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+                if (API_URL.endsWith('/')) {
+                    API_URL = API_URL.slice(0, -1);
+                }
+
+                const response = await fetch(`${API_URL}/roll/alldata`);
+                if (!response.ok) throw new Error("Failed to load roles");
+                
+                const data = await response.json();
+
+                if (data.success && data.roles) {
+                    const dynamicOptions = data.roles.map((role: any) => ({
+                        value: role.role_code.toLowerCase(),
+                        label: role.role_name
+                    }));
+                    setRoleOptions(dynamicOptions);
+                }
+            } catch (error) {
+                console.error("Dropdown Roles Fetch Error:", error);
+                setRoleOptions([
+                    { value: "admin", label: "admin" },
+                    { value: "department main", label: "department main" },
+                    { value: "user", label: "user" }
+                ]);
+            } finally {
+                setLoadingRoles(false);
+            }
+        };
+
+        fetchRolesForDropdown();
+    }, []);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setSelectedFile(file);
+            setPreviewUrl(URL.createObjectURL(file));
+        }
+    };
 
     const validateForm = (): boolean => {
         const newErrors: { [key: string]: string } = {};
@@ -47,33 +100,36 @@ export default function CreateNewUser() {
                 API_URL = API_URL.slice(0, -1);
             }
 
+            const dataToSend = new FormData();
+            dataToSend.append("fullName", formData.fullName);
+            dataToSend.append("username", formData.username);
+            dataToSend.append("password", formData.password);
+            dataToSend.append("std", formData.std);
+            dataToSend.append("rollNumber", formData.SUID);
+            dataToSend.append("userRole", formData.role);
+            dataToSend.append("department", formData.department);
+            
+            if (selectedFile) {
+                dataToSend.append("image", selectedFile);
+            }
+
             const response = await fetch(`${API_URL}/create/user`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    fullName: formData.fullName,
-                    username: formData.username,
-                    password: formData.password,
-                    std: formData.std,
-                    rollNumber: parseInt(formData.SUID),
-                    userRole: formData.role,
-                    department: formData.department
-                })
+                body: dataToSend
             });
 
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error("Server Error Response:", errorText);
-                toast.error(`Server Error: ${response.status}. Path might be incorrect.`);
+                toast.error(`Server Error: ${response.status}`);
                 return;
             }
 
             const data = await response.json();
 
             if (data.success) {
-                // 💡 ટોસ્ટ મેસેજમાં યુઝર આઈડી સાથે જોઈનિંગ ડેટ પણ બતાવશે
-                toast.success(`User created! ID: ${data.user.id}. Joined on: ${data.user.joined_date} 🎉`);
+                toast.success(`User created successfully! 🎉`);
                 setFormData({ fullName: "", username: "", std: "", password: "", SUID: "", role: "", department: "" });
+                setSelectedFile(null);
+                setPreviewUrl(null);
             } else {
                 toast.error(data.message || "Failed to create user");
             }
@@ -100,8 +156,27 @@ export default function CreateNewUser() {
             >
                 <form onSubmit={handleSubmit} className="space-y-6">
 
+                    <div className="flex flex-col items-center mb-6">
+                        <div className="relative w-32 h-32 rounded-full border-4 border-red-100 bg-gray-50 overflow-hidden shadow-inner flex items-center justify-center group">
+                            {previewUrl ? (
+                                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                            ) : (
+                                <FaCamera className="text-gray-300 text-3xl" />
+                            )}
+                            <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white text-xs font-bold">
+                                Upload Photo
+                                <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    onChange={handleFileChange} 
+                                    className="hidden" 
+                                />
+                            </label>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-2">Select profile image (PNG, JPG)</p>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        {/* Full Name */}
                         <div>
                             <Input
                                 label="Full Name"
@@ -117,7 +192,6 @@ export default function CreateNewUser() {
                             {errors.fullName && <p className="text-red-500 text-xs font-semibold mt-1.5 pl-2">⚠️ {errors.fullName}</p>}
                         </div>
 
-                        {/* Username */}
                         <div>
                             <Input
                                 label="Username"
@@ -133,7 +207,6 @@ export default function CreateNewUser() {
                             {errors.username && <p className="text-red-500 text-xs font-semibold mt-1.5 pl-2">⚠️ {errors.username}</p>}
                         </div>
 
-                        {/* Password */}
                         <div>
                             <Input
                                 type="password"
@@ -150,7 +223,6 @@ export default function CreateNewUser() {
                             {errors.password && <p className="text-red-500 text-xs font-semibold mt-1.5 pl-2">⚠️ {errors.password}</p>}
                         </div>
 
-                        {/* STD */}
                         <div>
                             <Input
                                 label="Standard (STD)"
@@ -166,7 +238,6 @@ export default function CreateNewUser() {
                             {errors.std && <p className="text-red-500 text-xs font-semibold mt-1.5 pl-2">⚠️ {errors.std}</p>}
                         </div>
 
-                        {/* SUID */}
                         <div>
                             <Input
                                 label="SUID"
@@ -184,26 +255,20 @@ export default function CreateNewUser() {
                         </div>
                     </div>
 
-                    {/* Role Dropdown */}
                     <div>
                         <SGDropdown
-                            label="Select Role"
+                            label={loadingRoles ? "Loading system roles..." : "Select Role"}
                             name="role"
                             value={formData.role}
                             onChange={(e: { target: { name: string; value: string } }) => {
                                 setFormData({ ...formData, role: e.target.value });
                                 if (errors.role) setErrors({ ...errors, role: "" });
                             }}
-                            options={[
-                                { value: "admin", label: "admin" },
-                                { value: "department main", label: "department main" },
-                                { value: "user", label: "user" },
-                            ]}
+                            options={roleOptions}
                             error={errors.role}
                         />
                     </div>
 
-                    {/* Department Dropdown */}
                     <div>
                         <SGDropdown
                             label="Select Department"
@@ -223,7 +288,6 @@ export default function CreateNewUser() {
                         />
                     </div>
 
-                    {/* Submit Button */}
                     <div className="pt-4 border-t border-gray-100 flex justify-end">
                         <button
                             type="submit"

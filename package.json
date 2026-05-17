@@ -10,17 +10,24 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
     "@tailwindcss/vite": "^4.3.0",
+    "apexcharts": "^5.12.0",
     "dotenv": "^17.4.2",
+    "maath": "^0.10.8",
     "mongodb": "^7.2.0",
     "mongoose": "^9.6.2",
     "motion": "^12.38.0",
     "react": "^19.2.6",
+    "react-apexcharts": "^2.1.0",
     "react-dom": "^19.2.6",
     "react-icons": "^5.6.0",
     "react-router-dom": "^7.15.0",
+    "recharts": "^3.8.1",
     "sonner": "^2.0.7",
-    "tailwindcss": "^4.3.0"
+    "tailwindcss": "^4.3.0",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",

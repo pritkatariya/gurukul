@@ -12,6 +12,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const [selectedLang, setSelectedLang] = useState("English");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // 💡 લોકલ સ્ટોરેજમાંથી લાઈવ ડેટા મેળવો
+  const userRole = localStorage.getItem("user_role") || "USER1029";
+  const userRaw = localStorage.getItem("user");
+  const userData = userRaw ? JSON.parse(userRaw) : {
+    full_name: "Admin User",
+    profile_image_url: null
+  };
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -43,6 +51,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
       <div className="flex items-center gap-2 sm:gap-4">
         
+        {/* 🌐 લેન્ગવેજ ડ્રોપડાઉન */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -77,14 +86,35 @@ export default function Header({ onMenuClick }: HeaderProps) {
           )}
         </div>
 
+        {/* 👤 ડાયનેમિક સેવક પ્રોફાઇલ ઈન્ફો */}
         <div className="flex items-center gap-1.5 sm:gap-2 bg-gray-50 text-red-800 px-2.5 sm:px-3 py-1.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all headerinset active:scale-[0.98] cursor-pointer focus:outline-none">
-          <div className="w-6 h-6 sm:w-7 sm:h-7 bg-red-100 text-red-800 shadow-md shadow-gray-950 rounded-full flex items-center justify-center shrink-0">
-            <FaUserCircle size={14} />
+          
+          {/* 💡 જો ઈમેજ હોય તો તે દેખાશે, નહિતર ડિફોલ્ટ આઈકોન આવશે */}
+          <div className="w-6 h-6 sm:w-7 sm:h-7 bg-red-100 text-red-800 shadow-md shadow-gray-950 rounded-full flex items-center justify-center shrink-0 overflow-hidden">
+            {userData.profile_image_url ? (
+              <img 
+                src={userData.profile_image_url} 
+                alt={userData.full_name} 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <FaUserCircle size={14} />
+            )}
           </div>
-          <div className="flex flex-col text-left pr-0.5 sm:flex">
-            <span className="text-[11px] sm:text-xs font-bold text-red-800 tracking-wide leading-tight">Admin User</span>
-            <span className="text-[9px] font-medium text-red-800/50" onClick={() => {toast.success("your super Admin")}}>Super Admin</span>
+
+          {/* 💡 ડેટાબેઝ મુજબ નામ અને રોલ સેટ થઈ જશે */}
+          <div className="flex flex-col text-left pr-0.5">
+            <span className="text-[11px] sm:text-xs font-black text-red-800 tracking-wide leading-tight truncate max-w-[100px] sm:max-w-[150px]">
+              {userData.full_name}
+            </span>
+            <span 
+              className="text-[9px] font-bold text-red-800/60 uppercase tracking-wider"
+              onClick={() => { toast.success(`You are logged in as ${userRole}`); }}
+            >
+              {userRole}
+            </span>
           </div>
+
         </div>
 
       </div>
