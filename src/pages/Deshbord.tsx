@@ -118,10 +118,10 @@ export default function Deshbord() {
         {/* 👤 સેવક પ્રોફાઇલ કાર્ડ */}
         <div className="w-full lg:w-[320px] bg-white border border-red-100 rounded-[2.5rem] p-6 shadow-md shadow-red-950/5 flex flex-col items-center text-center relative overflow-hidden shrink-0">
           
-          <div className="w-full h-44 relative mb-4 flex justify-center items-center rounded-3xl bg-gradient-to-br from-red-900 via-red-950 to-stone-950 shadow-inner border border-red-900/50">
+          <div className="w-full h-44 relative mb-4 flex justify-center items-center rounded-3xl bg-linear-to-br from-red-900 via-red-950 to-stone-950 shadow-inner border border-red-900/50">
             
             {/* ગ્લાસી પ્રોફાઇલ પિક્ચર કન્ટેનર */}
-            <div className="w-24 h-24 rounded-full bg-white/10 backdrop-blur-md flex justify-center items-center text-3xl text-white z-10 relative select-none shrink-0 grow-0 border-b border-r border-black/30 border-t-2 border-l-2 border-white/40 shadow-[12px_12px_24px_rgba(0,0,0,0.5)] overflow-hidden">
+            <div className="w-24 h-24 rounded-full bg-white/10 backdrop-blur-md flex justify-center items-center text-3xl text-white z-10 relative select-none shrink-0 grow-0 border-b border-r border-black/30 border-t-2 border-l-2 shadow-[12px_12px_24px_rgba(0,0,0,0.5)] overflow-hidden">
               {userData.profile_image_url ? (
                 <img 
                   src={userData.profile_image_url} 
