@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { FaUserAlt, FaLock, FaArrowRight } from "react-icons/fa";
-import Logo from '../assets/gurukul logo.png';
+// 💡 Vercel કેસ-સેન્સિટિવિટી ઇસ્યુ ફિક્સ કરવા માટે ફાઇલનું નામ સ્મોલ અક્ષરોમાં રાખવું (gurukul-logo.png)
+import Logo from '../assets/gurukul logo.png'
 import '../App.css';
 import Input from "../Components/commen/Input";
 import { useState } from "react";
@@ -66,14 +67,24 @@ export default function Login() {
             if (response.ok && data.success) {
                 toast.success('Login Successful! 🎉');
                 
+                // ૧. ડેટાબેઝમાંથી આવેલા આખા યુઝર ઓબ્જેક્ટની કોપી બનાવો
                 const userSessionData = { ...data.user };
                 
+                // ૨. સેક્યુરિટી માટે પાસવર્ડ ડિલીટ કરો
                 delete userSessionData.password;
 
-                if (!userSessionData.profile_image_url) {
-                    userSessionData.profile_image_url = data.user.image || data.user.avatar || null;
+                // ૩. ડેટાબેઝમાંથી જે પણ ઈમેજ કી મળે તે પકડો
+                let rawImageUrl = data.user.profile_image_url || data.user.image || data.user.avatar || null;
+
+                // 💡 Mixed Content અને CORS ફિક્સ: જો પાથ 'http://localhost:3000' વાળો હોય, તો તેને લાઈવ API URL થી બદલો
+                if (rawImageUrl && rawImageUrl.startsWith('http://localhost:3000')) {
+                    rawImageUrl = rawImageUrl.replace('http://localhost:3000', API_URL);
                 }
 
+                // ૪. ડાયનેમિકલી અપડેટ થયેલો પાથ પ્રોફાઇલમાં સેટ કરો
+                userSessionData.profile_image_url = rawImageUrl;
+
+                // પાસવર્ડ વગરનો બધો જ ડેટા લોકલ સ્ટોરેજમાં સેવ થશે
                 localStorage.setItem('user', JSON.stringify(userSessionData));
                 
                 // રોલ કોડ મેનેજમેન્ટ
