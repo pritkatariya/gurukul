@@ -20,9 +20,29 @@ export default function Login() {
             return;
         }
 
+        // 💡 સુપર એડમિન માટે સ્ટેટિક ડેટા સેટિંગ્સ
         if (username === 'super-admin' && password === 'admin123') {
             toast.success('Super Admin Login Successful! 🎉');
-            localStorage.setItem('user', JSON.stringify({ username: 'super-admin', role: 'super_admin' }));
+            
+            localStorage.setItem('user', JSON.stringify({ 
+                id: 123098,
+                username: 'super-admin', 
+                role: 'admin',
+                full_name: 'Super Admin Principal',
+                profile_image_url: null,
+                std: "Main",
+                roll_number: null,
+                department: "Administration"
+            }));
+            localStorage.setItem('user_role', 'SUPER_ADMIN');
+            
+            const fullPermissions = {
+                department: { create: true, view: true },
+                role: { create: true, view: true },
+                user: { create: true, view: true }
+            };
+            localStorage.setItem('user_permissions', JSON.stringify(fullPermissions));
+            
             navigate("/deshbord");
             return;
         }
@@ -46,7 +66,19 @@ export default function Login() {
             if (response.ok && data.success) {
                 toast.success('Login Successful! 🎉');
                 
-                localStorage.setItem('user', JSON.stringify(data.user));
+                const userSessionData = { ...data.user };
+                
+                delete userSessionData.password;
+
+                if (!userSessionData.profile_image_url) {
+                    userSessionData.profile_image_url = data.user.image || data.user.avatar || null;
+                }
+
+                localStorage.setItem('user', JSON.stringify(userSessionData));
+                
+                // રોલ કોડ મેનેજમેન્ટ
+                const finalRole = data.user.role || "sevak";
+                localStorage.setItem('user_role', finalRole);
                 
                 navigate("/deshbord");
             } else {
@@ -61,7 +93,6 @@ export default function Login() {
     return (
         <div className="w-screen min-h-screen flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-20 overflow-hidden relative selection:bg-red-200 p-6 scrollbar-hide">
 
-            {/* Background Animated Blobs */}
             <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
                 <motion.div
                     animate={{ x: [0, 50, 0], y: [0, 30, 0], scale: [1, 1.1, 1] }}
@@ -75,7 +106,6 @@ export default function Login() {
                 />
             </div>
 
-            {/* Grid Overlay */}
             <div
                 className="fixed inset-0 -z-20 opacity-[0.05] pointer-events-none"
                 style={{
@@ -87,7 +117,6 @@ export default function Login() {
                 }}
             />
 
-            {/* Left Box (Logo & Heading) */}
             <motion.div
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -105,7 +134,6 @@ export default function Login() {
                 </div>
             </motion.div>
 
-            {/* Right Box (Login Form) */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

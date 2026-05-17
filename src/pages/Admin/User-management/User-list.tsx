@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import DataExplorer from "../../../Components/commen/DataExplorer.tsx";
 import { toast } from "sonner";
 
-// ૧. ટાઈપસ્ક્રીપ્ટ માટે યુઝર ડેટાનું સ્ટ્રક્ચર સેટ કર્યું
+// ૧. ટાઈપસ્ક્રીપ્ટ માટે યુઝર ડેટાનું સ્ટ્રક્ચર સેટ કર્યું (img ઉમેર્યું)
 interface UserType {
+    img: string | null;
     name: string;
     role: string;
     dept: string;
@@ -16,8 +17,9 @@ export default function UserList() {
     const [loading, setLoading] = useState<boolean>(true);
     const [totalCount, setTotalCount] = useState<number>(0);
 
-    // ૨. યુઝર પેજ માટેના પ્રીમિયમ હેડર્સ
+    // ૨. યુઝર પેજ માટેના પ્રીમિયમ હેડર્સ (Profile સૌથી પહેલા રાખ્યું)
     const userHeaders = [
+        "Profile",
         "Full Name",
         "Assigned Role",
         "Department",
@@ -42,7 +44,9 @@ export default function UserList() {
                 const data = await response.json();
 
                 if (data.success && data.users) {
+                    // ડેટાબેઝના ઓબ્જેક્ટને ફ્રન્ટએન્ડના ફોર્મેટ સાથે લિંક કર્યું
                     const formattedUsers = data.users.map((user: any) => ({
+                        img: user.profile_image_url || null, // 💡 ડેટાબેઝમાંથી આવતી HTTPS URL
                         name: user.full_name,
                         role: user.role,
                         dept: user.department,

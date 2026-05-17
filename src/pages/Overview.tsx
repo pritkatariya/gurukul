@@ -64,6 +64,7 @@ export default function Overview() {
     return (
         <>
             <AnimatePresence>
+
                 {loading && (
                     <motion.div
                         className="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-red-900 select-none"
@@ -116,24 +117,24 @@ export default function Overview() {
                                 className="mt-6 px-6 py-3 bg-white text-red-900 font-bold rounded-full flex items-center gap-2 shadow-lg hover:bg-gray-100 hover:scale-105 active:scale-95 transition-all cursor-pointer z-50 text-sm md:text-base"
                             >
                                 <FaPlay className="text-xs" />
-                                પ્રવેશ કરો (જય સ્વામિનારાયણ)
+                                Jay Swaminarayan
                             </motion.button>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            <div className="w-screen min-h-screen scrolls flex flex-col items-center overflow-x-hidden scrollbar-hide bg-gray-50">
+            <div className="w-screen min-h-screen scrolls flex flex-col items-center overflow-x-hidden scrollbar-hide">
                 <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
                     <motion.div
                         animate={{ x: [0, 50, 0], y: [0, 30, 0], scale: [1, 1.1, 1] }}
                         transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute -top-20 -left-20 w-72 h-72 md:w-125 md:h-125 bg-[#ffa0a0] rounded-full blur-[80px] md:blur-[100px] opacity-40"
+                        className="absolute -top-20 -left-20 w-72 h-72 md:w-125 md:h-125 bg-red-100 rounded-full blur-[80px] md:blur-[100px] opacity-60"
                     />
                     <motion.div
                         animate={{ x: [0, -40, 0], y: [0, 60, 0] }}
                         transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute top-1/2 -right-10 w-80 h-80 md:w-150 md:h-150 bg-[#a3c0ff] rounded-full blur-[100px] md:blur-[120px] opacity-30"
+                        className="absolute top-1/2 -right-10 w-80 h-80 md:w-150 md:h-150 bg-blue-50 rounded-full blur-[100px] md:blur-[120px] opacity-50"
                     />
                 </div>
 

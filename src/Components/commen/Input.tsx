@@ -1,7 +1,7 @@
 import React from "react";
 
 interface InputProps {
-    label?: string; // નવું લેબલ પ્રોપ ઉમેર્યું
+    label?: string;
     icon?: React.ReactNode;
     type?: "text" | "password" | "email" | "number"; 
     placeholder?: string;
@@ -11,10 +11,10 @@ interface InputProps {
 }
 
 export default function Input({
-    label, // લેબલ પ્રોપ અહીં ડીસ્ટ્રક્ચર કરી
+    label,
     icon, 
     type = 'text', 
-    placeholder, 
+    placeholder,
     className, 
     value, 
     onChange
