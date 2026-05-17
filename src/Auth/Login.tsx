@@ -20,7 +20,7 @@ export default function Login() {
             return;
         }
 
-        // 💡 સુપર એડમિન માટે સ્ટેટિક ડેટા સેટિંગ્સ
+        // સુપર એડમિન માટે સ્ટેટિક ડેટા
         if (username === 'super-admin' && password === 'admin123') {
             toast.success('Super Admin Login Successful! 🎉');
             
@@ -66,17 +66,24 @@ export default function Login() {
             if (response.ok && data.success) {
                 toast.success('Login Successful! 🎉');
                 
+                // ડેટાબેઝમાંથી આવેલો આખો યુઝર ઓબ્જેક્ટ
                 const userSessionData = { ...data.user };
-                
-                delete userSessionData.password;
+                delete userSessionData.password; // સેક્યુરિટી માટે પાસવર્ડ ડિલીટ
 
-                if (!userSessionData.profile_image_url) {
-                    userSessionData.profile_image_url = data.user.image || data.user.avatar || null;
+                // તમારા ડેટાબેઝ મુજબની કી પકડી
+                let rawImageUrl = data.user.profile_image_url || data.user.image || data.user.avatar || null;
+
+                // 💡 Mixed Content ફિક્સ: લાઈવ સર્વર પર localhost ની લિંક બદલો
+                if (rawImageUrl && rawImageUrl.startsWith('http://localhost:3000')) {
+                    rawImageUrl = rawImageUrl.replace('http://localhost:3000', API_URL);
                 }
 
+                userSessionData.profile_image_url = rawImageUrl;
+
+                // બધો જ ડેટા (department, std, roll_number વગેરે) લોકલ સ્ટોરેજમાં સેવ થશે
                 localStorage.setItem('user', JSON.stringify(userSessionData));
                 
-                // રોલ કોડ મેનેજમેન્ટ
+                // રોલ કોડ સેટિંગ (તમારા ડેટાબેઝ મુજબ 'user1029' અથવા 'sevak')
                 const finalRole = data.user.role || "sevak";
                 localStorage.setItem('user_role', finalRole);
                 

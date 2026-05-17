@@ -1,10 +1,23 @@
 import { useState, useRef, useEffect } from "react";
 import { FaGlobe, FaChevronDown, FaUserCircle, FaBars } from "react-icons/fa";
-import Logo from "../assets/gurukul logo.png";
+import Logo from "../assets/gurukul logo.png"; // Vercel ફ્રેન્ડલી સ્મોલ નામ
 import { toast } from "sonner";
 
 interface HeaderProps {
-  onMenuClick?: () => void; // મોબાઈલ મેનુ ઓપન કરવાનું ફંક્શન
+  onMenuClick?: () => void;
+}
+
+// 💡 TypeScript એરર ફિક્સ કરવા માટે યુઝર ડેટાનો પ્રોપર ટાઈપ (Interface) નક્કી કર્યો
+interface UserSession {
+  id?: number;
+  username?: string;
+  full_name: string;
+  profile_image_url: string | null;
+  role?: string;
+  roll_number?: number;
+  std?: string;
+  department?: string;
+  joined_date?: string;
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
@@ -12,13 +25,28 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const [selectedLang, setSelectedLang] = useState("English");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // 💡 લોકલ સ્ટોરેજમાંથી લાઈવ ડેટા મેળવો
   const userRole = localStorage.getItem("user_role") || "USER1029";
   const userRaw = localStorage.getItem("user");
-  const userData = userRaw ? JSON.parse(userRaw) : {
+  
+  // 💡 અહીં ટાઈપ `: UserSession` ડિફાઇન કર્યો એટલે 'never' વાળી એરર સોલ્વ થઈ ગઈ
+  let userData: UserSession = {
     full_name: "Admin User",
     profile_image_url: null
   };
+
+  if (userRaw) {
+    try {
+      userData = JSON.parse(userRaw);
+      
+      // 💡 સેફ્ટી ચેક: જો લોકલ સ્ટોરેજમાં ક્યાંય પણ localhost વાળો પાથ રહી ગયો હોય, તો તેને લાઈવ API_URL થી બદલશે
+      if (userData.profile_image_url && userData.profile_image_url.startsWith('http://localhost:3000')) {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        userData.profile_image_url = userData.profile_image_url.replace('http://localhost:3000', API_URL);
+      }
+    } catch (e) {
+      console.error("Error parsing user data from localStorage", e);
+    }
+  }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -51,7 +79,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
       <div className="flex items-center gap-2 sm:gap-4">
         
-        {/* 🌐 લેન્ગવેજ ડ્રોપડાઉન */}
+        {/* લેન્ગવેજ ડ્રોપડાઉન */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -86,15 +114,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
           )}
         </div>
 
-        {/* 👤 ડાયનેમિક સેવક પ્રોફાઇલ ઈન્ફો */}
+        {/* યુઝર પ્રોફાઇલ ઈન્ફો (જમણી બાજુ) */}
         <div className="flex items-center gap-1.5 sm:gap-2 bg-gray-50 text-red-800 px-2.5 sm:px-3 py-1.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all headerinset active:scale-[0.98] cursor-pointer focus:outline-none">
           
-          {/* 💡 જો ઈમેજ હોય તો તે દેખાશે, નહિતર ડિફોલ્ટ આઈકોન આવશે */}
           <div className="w-6 h-6 sm:w-7 sm:h-7 bg-red-100 text-red-800 shadow-md shadow-gray-950 rounded-full flex items-center justify-center shrink-0 overflow-hidden">
-            {userData.profile_image_url ? (
+            {userData?.profile_image_url ? (
               <img 
                 src={userData.profile_image_url} 
-                alt={userData.full_name} 
+                alt={userData?.full_name} 
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -102,10 +129,9 @@ export default function Header({ onMenuClick }: HeaderProps) {
             )}
           </div>
 
-          {/* 💡 ડેટાબેઝ મુજબ નામ અને રોલ સેટ થઈ જશે */}
           <div className="flex flex-col text-left pr-0.5">
-            <span className="text-[11px] sm:text-xs font-black text-red-800 tracking-wide leading-tight truncate max-w-25 sm:max-w-37.5">
-              {userData.full_name}
+            <span className="text-[11px] sm:text-xs font-black text-red-800 tracking-wide leading-tight truncate max-w-[100px] sm:max-w-[150px]">
+              {userData?.full_name}
             </span>
             <span 
               className="text-[9px] font-bold text-red-800/60 uppercase tracking-wider"
