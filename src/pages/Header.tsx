@@ -104,7 +104,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
           {/* 💡 ડેટાબેઝ મુજબ નામ અને રોલ સેટ થઈ જશે */}
           <div className="flex flex-col text-left pr-0.5">
-            <span className="text-[11px] sm:text-xs font-black text-red-800 tracking-wide leading-tight truncate max-w-[100px] sm:max-w-[150px]">
+            <span className="text-[11px] sm:text-xs font-black text-red-800 tracking-wide leading-tight truncate max-w-25 sm:max-w-37.5">
               {userData.full_name}
             </span>
             <span 

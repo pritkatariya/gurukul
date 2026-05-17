@@ -124,7 +124,7 @@ export default function DataExplorer({ headers, data }: DataExplorerProps) {
                                         className="w-14 h-14 rounded-full object-cover border-2 border-red-50 shadow-sm"
                                     />
                                 ) : (
-                                    <div className="w-14 h-14 rounded-full bg-red-50 text-red-800 font-black text-lg flex items-center justify-center border border-red-100 flex-shrink-0">
+                                    <div className="w-14 h-14 rounded-full bg-red-50 text-red-800 font-black text-lg flex items-center justify-center border border-red-100 shrink-0">
                                         {item.name ? item.name.charAt(0).toUpperCase() : "G"}
                                     </div>
                                 )}
