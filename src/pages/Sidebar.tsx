@@ -14,5 +14,5 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             <Navbar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
         </div>
     </div>
-  )
+  );
 }

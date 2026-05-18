@@ -7,8 +7,10 @@ import CreateRoll from "../pages/Admin/Roll-management/Create-roll";
 import CreateNewUser from "../pages/Admin/User-management/Create-new-user";
 import UserList from "../pages/Admin/User-management/User-list";
 import RollList from "../pages/Admin/Roll-management/Role-list";
-import CreateDepartment from "../pages/Admin/Department-manage/Create-department";
-import DepartmentList from "../pages/Admin/Department-manage/Department-list";
+import AdmitRequestGMusic from "../pages/Departments/G-music/Admit-Request";
+import StudentListGMusic from "../pages/Departments/G-music/User-lists";
+import AdmitRequestGurukulArt from "../pages/Departments/Gurukul-Art/Admit-Request";
+import StudentListGurukulArt from "../pages/Departments/Gurukul-Art/User-lists";
 
 export default function Router() {
     return (
@@ -21,8 +23,12 @@ export default function Router() {
                 <Route path="/deshbord/user-list" element={<UserList/>} />
                 <Route path="/deshbord/new-roll-create" element={<CreateRoll/>}/>
                 <Route path="/deshbord/roll-list" element={<RollList/>}/>
-                <Route path="/deshbord/new-department-create" element={<CreateDepartment/>}/>
-                <Route path="/deshbord/department-list" element={<DepartmentList/>}/>
+
+                <Route path="/deshbord/g-music/admit-request" element={<AdmitRequestGMusic/>}/>
+                <Route path="/deshbord/g-music/user-lists" element={<StudentListGMusic/>}/>
+
+                <Route path="/deshbord/gurukul-art/admit-request" element={<AdmitRequestGurukulArt/>}/>
+                <Route path="/deshbord/gurukul-art/user-lists" element={<StudentListGurukulArt/>}/>
             </Route>
         </Routes>
     )

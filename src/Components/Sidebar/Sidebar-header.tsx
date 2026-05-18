@@ -1,6 +1,6 @@
-import { VscLayoutSidebarLeftDock, VscLayoutSidebarRightDock } from 'react-icons/vsc'
-import "../../App.css"
-import Logo from '../../assets/gurukul logo.png'
+import { VscLayoutSidebarLeftDock, VscLayoutSidebarRightDock } from 'react-icons/vsc';
+import "../../App.css";
+import Logo from '../../assets/gurukul logo.png';
 
 interface SidebarHeaderProps {
   isCollapsed: boolean;
@@ -10,17 +10,15 @@ interface SidebarHeaderProps {
 export default function SidebarHeader({ isCollapsed, setIsCollapsed }: SidebarHeaderProps) {
   return (
     <div 
-      className={`w-full h-16 rounded-2xl bg-red-800 flex p-2 pl-3 pr-3 shadow-md shadow-gray-950 items-center transition-all duration-300 ${
+      className={`w-full h-16 rounded-2xl bg-red-800 flex p-2 pl-3 pr-3 shadow-md shadow-gray-950/10 border border-red-900/10 items-center transition-all duration-300 ${
         isCollapsed ? "justify-center" : "justify-between"
       }`}
     >
-        {/* જો સાઇડબાર ક્લોઝ હોય તો લોગો સંતાઈ જશે */}
-        {!isCollapsed && <img src={Logo} className="w-10 h-10 object-contain" alt="Logo" />}
+        {!isCollapsed && <img src={Logo} className="w-10 h-10 object-contain select-none" alt="Logo" />}
         
-        {/* સાઇડબાર ઓપન/ક્લોઝ કરવાનું બટન */}
         <div 
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="w-10 h-10 rounded-lg cursor-pointer bg-red-100 headerinset flex justify-center items-center shrink-0"
+          className="w-10 h-10 rounded-xl cursor-pointer bg-red-100 headerinset flex justify-center items-center shrink-0 active:scale-95 transition-transform"
         >
             {isCollapsed ? (
               <VscLayoutSidebarRightDock size={20} className="text-red-800" />
@@ -29,5 +27,5 @@ export default function SidebarHeader({ isCollapsed, setIsCollapsed }: SidebarHe
             )}
         </div>
     </div>
-  )
+  );
 }
