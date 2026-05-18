@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReactApexChart from "react-apexcharts";
 import type { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
@@ -35,22 +35,61 @@ const userMonthlyData = [
   { month: "May", SevaProgress: 78 },
 ];
 
+interface NotificationType {
+  id: number;
+  title: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
+
 export default function Deshbord() {
   const navigate = useNavigate();
-  const userRole = localStorage.getItem("user_role") || "USER1029";
+  const userRole = localStorage.getItem("user_role") || "USER";
   const userRaw = localStorage.getItem("user");
   
-  // 💡 લોકલ સ્ટોરેજમાંથી બધો જ ડેટા લોડ થશે (profile_image_url સાથે)
   const userData = userRaw ? JSON.parse(userRaw) : { 
+    id: 0,
     full_name: "Gurukul Sevak", 
-    std: "12th", 
+    std: "Main", 
     roll_number: "00", 
-    department: "General",
+    department_id: 0,
     profile_image_url: null 
   };
 
+  const [notifications, setNotifications] = useState<NotificationType[]>([]);
+  const [deptName, setDeptName] = useState<string>("General / Admin");
+
+  useEffect(() => {
+    const fetchDashboardMeta = async () => {
+      try {
+        let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
+
+        const resDept = await fetch(`${API_URL}/auth/departments`);
+        const dataDept = await resDept.json();
+        if (dataDept.success && dataDept.departments) {
+          const match = dataDept.departments.find((d: any) => Number(d.id) === Number(userData.department_id));
+          if (match) setDeptName(match.name);
+        }
+
+        if (userData.id) {
+          const resNotif = await fetch(`${API_URL}/user/notifications/${userData.id}`);
+          const dataNotif = await resNotif.json();
+          if (dataNotif.success && dataNotif.notifications) {
+            setNotifications(dataNotif.notifications);
+          }
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchDashboardMeta();
+  }, [userData.id, userData.department_id]);
+
   const handleLogout = () => {
-    localStorage.clear(); // લોગઆઉટ વખતે આખો લોકલ સ્ટોરેજ ડેટા ડીલીટ થશે
+    localStorage.clear(); 
     toast.success("Logged out successfully! 👋");
     navigate("/");
   };
@@ -91,7 +130,6 @@ export default function Deshbord() {
   return (
     <div className="w-full min-h-screen bg-gray-50/50 p-4 md:p-8 select-none">
       
-      {/* હેડર સેક્શન */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-black text-red-950 uppercase tracking-tight">Sevak Portal</h1>
@@ -115,12 +153,10 @@ export default function Deshbord() {
 
       <div className="w-full flex flex-col lg:flex-row gap-8 items-start">
         
-        {/* 👤 સેવક પ્રોફાઇલ કાર્ડ */}
         <div className="w-full lg:w-[320px] bg-white border border-red-100 rounded-[2.5rem] p-6 shadow-md shadow-red-950/5 flex flex-col items-center text-center relative overflow-hidden shrink-0">
           
           <div className="w-full h-44 relative mb-4 flex justify-center items-center rounded-3xl bg-linear-to-br from-red-900 via-red-950 to-stone-950 shadow-inner border border-red-900/50">
             
-            {/* ગ્લાસી પ્રોફાઇલ પિક્ચર કન્ટેનર */}
             <div className="w-24 h-24 rounded-full bg-white/10 backdrop-blur-md flex justify-center items-center text-3xl text-white z-10 relative select-none shrink-0 grow-0 border-b border-r border-black/30 border-t-2 border-l-2 shadow-[12px_12px_24px_rgba(0,0,0,0.5)] overflow-hidden">
               {userData.profile_image_url ? (
                 <img 
@@ -141,11 +177,10 @@ export default function Deshbord() {
           <h2 className="text-xl font-black text-red-950 uppercase tracking-tight">{userData.full_name}</h2>
           <p className="bg-red-800 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full mt-1.5 tracking-widest">{userRole}</p>
 
-          {/* ડાયનેમિક ડેટા ડિસ્પ્લે */}
           <div className="w-full border-t border-gray-100 my-5 pt-4 space-y-3 text-left">
             <div className="flex items-center gap-4 text-slate-700">
               <FaBuilding className="text-red-800 text-lg shrink-0" />
-              <div><p className="text-[10px] font-bold text-gray-400 uppercase">Department</p><p className="text-sm font-black">{userData.department}</p></div>
+              <div><p className="text-[10px] font-bold text-gray-400 uppercase">Department</p><p className="text-sm font-black">{deptName}</p></div>
             </div>
             <div className="flex items-center gap-4 text-slate-700">
               <FaGraduationCap className="text-red-800 text-lg shrink-0" />
@@ -153,7 +188,7 @@ export default function Deshbord() {
             </div>
             <div className="flex items-center gap-4 text-slate-700">
               <FaHashtag className="text-red-800 text-lg shrink-0" />
-              <div><p className="text-[10px] font-bold text-gray-400 uppercase">SUID / Roll No</p><p className="text-sm font-black">{userData.roll_number || "00"}</p></div>
+              <div><p className="text-[10px] font-bold text-gray-400 uppercase">SUID / Roll No</p><p className="text-sm font-black">{userData.roll_number || userData.suid || "00"}</p></div>
             </div>
           </div>
 
@@ -172,7 +207,6 @@ export default function Deshbord() {
           </div>
         </div>
 
-        {/* 📈 આલેખ સેક્શન */}
         <div className="flex-1 w-full flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
@@ -204,25 +238,42 @@ export default function Deshbord() {
 
           </div>
 
-          {/* સિસ્ટમ લોગ્સ */}
           <div className="bg-white border border-gray-100 rounded-4xl p-6 shadow-sm">
             <h3 className="text-lg font-black text-red-950 uppercase tracking-tight mb-4">Your Recent System Logs</h3>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
-                <FaClock className="text-red-800 shrink-0" />
-                <div>
-                  <p className="text-xs font-bold text-slate-800">Account Verified on Gurukul System</p>
-                  <p className="text-[10px] text-gray-400">Synced via Database Security Protocol</p>
+            
+            {notifications.length === 0 ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
+                  <FaClock className="text-red-800 shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">Account Verified on Gurukul System</p>
+                    <p className="text-[10px] text-gray-400">Synced via Database Security Protocol</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
+                  <FaClock className="text-red-800 shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">Department assigned to {deptName}</p>
+                    <p className="text-[10px] text-gray-400">Authorized by Admin Head</p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
-                <FaClock className="text-red-800 shrink-0" />
-                <div>
-                  <p className="text-xs font-bold text-slate-800">Department assigned to {userData.department}</p>
-                  <p className="text-[10px] text-gray-400">Authorized by Admin Head</p>
-                </div>
+            ) : (
+              <div className="space-y-4 max-h-60 overflow-y-auto scrollbar-hide">
+                {notifications.map((notif) => (
+                  <div key={notif.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100/50">
+                    <FaClock className="text-red-800 shrink-0" />
+                    <div>
+                      <p className="text-xs font-black text-slate-800 uppercase tracking-tight">{notif.title}</p>
+                      <p className="text-[11px] font-medium text-gray-500 mt-0.5">{notif.message}</p>
+                      <p className="text-[9px] text-gray-400 font-bold mt-1">
+                        {notif.created_at ? new Date(notif.created_at).toLocaleString('en-GB') : ""}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            )}
           </div>
 
         </div>

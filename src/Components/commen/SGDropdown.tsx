@@ -48,12 +48,11 @@ export default function SGDropdown({
 
   return (
     <div className={`w-full relative ${className}`} ref={dropdownRef}>
-      {/* Label */}
-      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+      
+      <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2 pl-1">
         {label}
       </label>
 
-      {/* Custom Select Button */}
       <div
         tabIndex={0} 
         onClick={() => setIsOpen(!isOpen)}
@@ -63,20 +62,20 @@ export default function SGDropdown({
             setIsOpen(!isOpen);
           }
         }}
-        className={`w-full p-3 rounded-xl bg-white flex justify-between items-center cursor-pointer transition-all duration-150 select-none shadow-sm focus:outline-none ${
+        className={`w-full h-14 px-4 rounded-2xl bg-white flex justify-between items-center cursor-pointer transition-all duration-150 select-none shadow-sm focus:outline-none ${
           isOpen 
-            ? 'border-2 border-red-600 ring-4 ring-red-100' 
+            ? 'border-2 border-red-800 ring-4 ring-red-50' 
             : error 
             ? 'border-2 border-red-500 ring-4 ring-red-50' 
-            : 'border border-gray-200 hover:border-gray-300 focus:border-2 focus:border-red-600 focus:ring-4 focus:ring-red-100 hover:shadow-md' 
+            : 'border border-gray-200 hover:border-gray-300 focus:border-2 focus:border-red-800 focus:ring-4 focus:ring-red-50 bg-gray-50/20' 
         }`}
       >
-        <span className={`text-sm ${selectedOption ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>
+        <span className={`text-sm font-bold ${selectedOption ? 'text-gray-700' : 'text-gray-400'}`}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         
         <svg
-          className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-red-600' : ''}`}
+          className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-red-800' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -85,16 +84,15 @@ export default function SGDropdown({
         </svg>
       </div>
 
-      {/* --- SUGGESTION BOX WITH OPTION OUTLINE/RING --- */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto transform origin-top transition-all duration-200 scale-100">
-          <div className="p-2 bg-white space-y-1">
+        <div className="absolute BrutalZIndex w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto transform origin-top transition-all duration-200 scale-100 p-1.5 z-50">
+          <div className="bg-white space-y-0.5">
             {options.map((option) => {
               const isSelected = option.value === value;
               return (
                 <div
                   key={option.value}
-                  tabIndex={0} // 💡 આનાથી લિસ્ટના ઓપ્શન પર પણ Tab અને Focus જશે
+                  tabIndex={0} 
                   onClick={() => handleSelect(option.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
@@ -102,11 +100,10 @@ export default function SGDropdown({
                       handleSelect(option.value);
                     }
                   }}
-                  // 💡 focus: અને hover: બંનેમાં લાલ બોર્ડર અને રીંગ સેટ કરી દીધી છે
-                  className={`flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer outline-none focus:outline-none ${
+                  className={`flex items-center justify-between px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-150 cursor-pointer outline-none focus:outline-none ${
                     isSelected
-                      ? 'bg-red-600 text-white shadow-md border-2 border-red-600' // Selected Item
-                      : 'text-gray-700 border-2 border-transparent hover:border-red-600 hover:bg-red-50 hover:text-red-700 focus:border-2 focus:border-red-600 focus:bg-red-50 focus:text-red-700 focus:ring-2 focus:ring-red-200' // 💡 આ ઓપ્શન પર આઉટલાઇન/રીંગ લાવશે
+                      ? 'bg-red-800 text-white shadow-md border-2 border-red-800' 
+                      : 'text-gray-600 border-2 border-transparent hover:border-red-800 hover:bg-red-50/60 hover:text-red-800 focus:border-2 focus:border-red-800 focus:bg-red-50/60 focus:text-red-800 focus:ring-2 focus:ring-red-100' 
                   }`}
                 >
                   <span>{option.label}</span>
@@ -121,15 +118,14 @@ export default function SGDropdown({
             })}
             
             {options.length === 0 && (
-              <div className="p-4 text-center text-sm text-gray-400">No options available</div>
+              <div className="p-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">No options available</div>
             )}
           </div>
         </div>
       )}
 
-      {/* Error Message */}
       {error && (
-        <p className="text-red-600 text-xs mt-1.5 flex items-center gap-1 font-medium">
+        <p className="text-red-500 text-xs font-semibold mt-1.5 flex items-center gap-1.5 pl-2">
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>

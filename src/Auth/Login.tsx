@@ -1,101 +1,77 @@
-import { motion } from "motion/react";
+import { motion } from "motion/react"; 
 import { FaUserAlt, FaLock, FaArrowRight } from "react-icons/fa";
-import Logo from '../assets/gurukul logo.png';
+import Logo from '../assets/gurukul logo.png'; 
 import '../App.css';
 import Input from "../Components/commen/Input";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import Application from "../pages/Application";
 
 export default function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [selectedSubject, setSelectedSubject] = useState("");
+
+    const sidebarRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+                setIsSidebarOpen(false);
+            }
+        }
+        if (isSidebarOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [isSidebarOpen]);
 
     const preventDefault = async (e: React.FormEvent) => {
         e.preventDefault();
-
         if (!username.trim() || !password.trim()) {
             toast.error('Please enter both username and password');
             return;
         }
 
-        // સુપર એડમિન માટે સ્ટેટિક ડેટા
         if (username === 'super-admin' && password === 'admin123') {
             toast.success('Super Admin Login Successful! 🎉');
-            
             localStorage.setItem('user', JSON.stringify({ 
-                id: 123098,
-                username: 'super-admin', 
-                role: 'admin',
-                full_name: 'Super Admin Principal',
-                profile_image_url: null,
-                std: "Main",
-                roll_number: null,
-                department: "Administration"
+                id: 123098, username: 'super-admin', role: 'admin', full_name: 'Super Admin Principal', department_id: 0, profile_image_url: null
             }));
             localStorage.setItem('user_role', 'SUPER_ADMIN');
-            
-            const fullPermissions = {
-                department: { create: true, view: true },
-                role: { create: true, view: true },
-                user: { create: true, view: true }
-            };
-            localStorage.setItem('user_permissions', JSON.stringify(fullPermissions));
-            
             navigate("/deshbord");
             return;
         }
 
         try {
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
             const response = await fetch(`${API_URL}/auth/login`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    username: username, 
-                    password: password
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
             });
 
             const data = await response.json();
-
             if (response.ok && data.success) {
                 toast.success('Login Successful! 🎉');
-                
-                // ડેટાબેઝમાંથી આવેલો આખો યુઝર ઓબ્જેક્ટ
-                const userSessionData = { ...data.user };
-                delete userSessionData.password; // સેક્યુરિટી માટે પાસવર્ડ ડિલીટ
-
-                // તમારા ડેટાબેઝ મુજબની કી પકડી
-                let rawImageUrl = data.user.profile_image_url || data.user.image || data.user.avatar || null;
-
-                // 💡 Mixed Content ફિક્સ: લાઈવ સર્વર પર localhost ની લિંક બદલો
-                if (rawImageUrl && rawImageUrl.startsWith('http://localhost:3000')) {
-                    rawImageUrl = rawImageUrl.replace('http://localhost:3000', API_URL);
-                }
-
-                userSessionData.profile_image_url = rawImageUrl;
-
-                // બધો જ ડેટા (department, std, roll_number વગેરે) લોકલ સ્ટોરેજમાં સેવ થશે
-                localStorage.setItem('user', JSON.stringify(userSessionData));
-                
-                // રોલ કોડ સેટિંગ (તમારા ડેટાબેઝ મુજબ 'user1029' અથવા 'sevak')
-                const finalRole = data.user.role || "sevak";
-                localStorage.setItem('user_role', finalRole);
-                
+                localStorage.setItem('user', JSON.stringify(data.user));
+                localStorage.setItem('user_role', data.user_role || data.user.role || "user");
                 navigate("/deshbord");
             } else {
                 toast.error(data.message || 'Invalid credentials');
             }
         } catch (error) {
-            console.error("Login Error:", error);
-            toast.error('Server is not connected or offline');
+            toast.error('Server offline or connection refused');
         }
-    }
+    };
+
+    const openApplicationWithSubject = (subjectText: string) => {
+        setSelectedSubject(subjectText);
+        setIsSidebarOpen(true);
+    };
 
     return (
         <div className="w-screen min-h-screen flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-20 overflow-hidden relative selection:bg-red-200 p-6 scrollbar-hide">
@@ -113,13 +89,9 @@ export default function Login() {
                 />
             </div>
 
-            <div
-                className="fixed inset-0 -z-20 opacity-[0.05] pointer-events-none"
+            <div className="fixed inset-0 -z-20 opacity-[0.05] pointer-events-none"
                 style={{
-                    backgroundImage: `
-                        linear-gradient(to right, #991b1b 1px, transparent 1px),
-                        linear-gradient(to bottom, #991b1b 1px, transparent 1px)
-                    `,
+                    backgroundImage: `linear-gradient(to right, #991b1b 1px, transparent 1px), linear-gradient(to bottom, #991b1b 1px, transparent 1px)`,
                     backgroundSize: '40px 40px',
                 }}
             />
@@ -179,14 +151,16 @@ export default function Login() {
                 </form>
 
                 <div className="mt-10 flex flex-col gap-3 items-center">
-                    <a href="#" className="text-[10px] font-black text-red-800/40 hover:text-red-800 uppercase tracking-widest transition-colors">
+                    <button 
+                        onClick={() => openApplicationWithSubject("Request for password reset")} 
+                        className="text-[10px] font-black text-red-800/40 hover:text-red-800 uppercase tracking-widest transition-colors cursor-pointer focus:outline-none"
+                    >
                         Forgot password for Application?
-                    </a>
-                    <p className="text-sm text-gray-400 font-bold">
-                        New here? <span className="text-red-800 cursor-pointer hover:underline underline-offset-4">Register</span>
-                    </p>
+                    </button>
                 </div>
             </motion.div>
+
+            <Application isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} sidebarRef={sidebarRef} defaultSubject={selectedSubject} />
 
         </div>
     );
