@@ -402,12 +402,6 @@ export default function Overview() {
                         animate="visible"
                         className="relative z-10 mx-auto max-w-4xl px-6 text-center text-white"
                     >
-                        <p className="text-sm font-black uppercase tracking-[0.35em] text-white/80 md:text-base">
-                            {overviewConfig?.heroSubtitle || "Shree Swaminarayan Gurukul"}
-                        </p>
-                        <h1 className="mt-5 text-5xl font-black tracking-tight drop-shadow-2xl md:text-7xl">
-                            {overviewConfig?.heroTitle || "Jay Swaminarayan"}
-                        </h1>
                     </motion.div>
 
                     <button
