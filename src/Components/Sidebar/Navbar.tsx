@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { IoMdArrowDroprightCircle } from "react-icons/io";
 import { IoLogOut } from "react-icons/io5";
+// 🎯 FaMusic આઇકોન અહીં ઇમ્પોર્ટ કર્યો છે
+import { FaUserTie, FaPlus, FaList, FaBuilding, FaImages, FaSlidersH, FaMusic } from "react-icons/fa";
 import { FaClipboardUser } from "react-icons/fa6";
-import { FaUserTie, FaPlus, FaList, FaBuilding } from "react-icons/fa";
 import Dropdown from "./DropDown";
 import LinkButton from "../commen/Link-button";
 import { GoHomeFill } from "react-icons/go";
@@ -35,7 +36,7 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
 
     const loggedInUserRole = localStorage.getItem("user_role") || "";
     const userRaw = localStorage.getItem("user");
-    
+
     let userId: number | null = null;
     let userDepartmentId: number | null = null;
 
@@ -57,8 +58,8 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
         { id: 2, department_name: "Gurukul Art", route: "gurukul-art" }
     ];
 
-    const staticDepartments = isMainSuperAdmin 
-        ? allDepartments 
+    const staticDepartments = isMainSuperAdmin
+        ? allDepartments
         : allDepartments.filter(dept => Number(dept.id) === Number(userDepartmentId));
 
     const fetchLiveNavbarStructure = async () => {
@@ -68,8 +69,8 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
 
             if (isMainSuperAdmin) {
                 setUserPerms({
-                    role: { create: true, view: true }, 
-                    user: { create: true, view: true } 
+                    role: { create: true, view: true },
+                    user: { create: true, view: true }
                 });
                 return;
             }
@@ -142,7 +143,7 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
     return (
         <div className="relative w-full h-full flex flex-col gap-4 rounded-2xl bg-red-800 shadow-md p-3 select-none">
             <div className="w-full flex flex-col overflow-y-auto max-h-full gap-2 scrollbar-none">
-                
+
                 {!isCollapsed && (
                     <p className="text-xs font-black uppercase tracking-wider text-red-100 px-2 mb-1 truncate">
                         Admin Management
@@ -195,6 +196,32 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
                                     <span>User / Sevak List</span>
                                 </Link>
                             )}
+                        </Dropdown>
+                    )}
+                    {isMainSuperAdmin && (
+                        <Dropdown
+                            icon={<FaImages />}
+                            arrowicon={<IoMdArrowDroprightCircle />}
+                            text={!isCollapsed ? "Overview Control" : ""}
+                            isOpen={openId === "admin-3"}
+                            onToggle={() => handleToggle("admin-3")}
+                            isCollapsed={isCollapsed}
+                        >
+                            <Link
+                                to="/deshbord/overview-controller"
+                                className="flex items-center gap-2 w-full text-left p-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-red-900 hover:bg-red-800/10 transition-colors"
+                            >
+                                <FaSlidersH className="text-red-800/70 text-base shrink-0" />
+                                <span>Manage Overview</span>
+                            </Link>
+
+                            <Link
+                                to="/deshbord/overview-music"
+                                className="flex items-center gap-2 w-full text-left p-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-red-900 hover:bg-red-800/10 transition-colors"
+                            >
+                                <FaMusic className="text-red-800/70 text-base shrink-0" />
+                                <span>Music Tracks</span>
+                            </Link>
                         </Dropdown>
                     )}
                 </div>
