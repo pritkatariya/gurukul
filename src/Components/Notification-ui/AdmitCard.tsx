@@ -45,10 +45,10 @@ export default function AdmitCard({
       </div>
       {hasControlAccess && item.status?.toLowerCase() === "pending" && !item.notification_type && (
         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-50">
-          <button type="button" disabled={processingId === item.id} onClick={() => handleApproveAdmit(item.id)} className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black py-2 rounded-xl transition-all">
+          <button disabled={processingId === item.id} onClick={() => handleApproveAdmit(item.id)} className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black py-2 rounded-xl transition-all">
             APPROVE USER
           </button>
-          <button type="button" disabled={processingId === item.id} onClick={() => handleDeclineAdmit(item.id)} className="bg-red-50 hover:bg-red-100 text-red-700 text-[10px] font-black py-2 rounded-xl transition-all">
+          <button disabled={processingId === item.id} onClick={() => handleDeclineAdmit(item.id)} className="bg-red-50 hover:bg-red-100 text-red-700 text-[10px] font-black py-2 rounded-xl transition-all">
             DECLINE
           </button>
         </div>

@@ -1,120 +1,326 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import '../App.css';
-import { GiHumanPyramid, GiPagoda } from "react-icons/gi";
-import { GrCloudComputer } from "react-icons/gr";
-import { BsAppleMusic } from "react-icons/bs";
-import { FaArrowRight, FaPlay } from "react-icons/fa"; // 👈 FaPlay એડ કર્યો
+import { useEffect, useMemo, useState } from "react";
+import ChromaGrid from "../Components/ChromaGrid";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
+import "../App.css";
+import { GiPagoda } from "react-icons/gi";
+import {
+    FaArrowRight,
+    FaChevronLeft,
+    FaChevronRight,
+    FaPlay,
+    FaVolumeDown,
+    FaVolumeUp,
+} from "react-icons/fa";
 import { Link } from "react-router-dom";
+import Stack from "./Stack";
+import ElasticSlider from "../Components/ElasticSlider";
+import { useMusic } from "../Components/MusicProvider";
 
-// ઈમેજ, લોગો અને ઓડિયો ફાઇલ ઇમ્પોર્ટ કરી
 import LogoImg from "../assets/gurukul logo.png";
 import BhayavadarImg from "../assets/Bhayavadar.png";
-import SwaminarayanSound from "../assets/jay-swaminarayan.mp3";
+import SwaminarayanSceneImg from "../assets/swaminarayan-blessing.png";
+
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");
+
+type OverviewApiConfig = {
+    heroTitle: string;
+    heroSubtitle: string;
+    heroImages: string[];
+    logoImage: string;
+    campusImage: string;
+    campusGalleryImages: string[];
+    stackTitle: string;
+    stackSubtitle: string;
+    stackImages: string[];
+    showStackSection: boolean;
+    domeTitle: string;
+    domeSubtitle: string;
+    domeImages: string[];
+    showDomeSection: boolean;
+    chromaTitle: string;
+    chromaSubtitle: string;
+    chromaImages: string[];
+    showChromaSection: boolean;
+};
+
+const fadeUp: Variants = {
+    hidden: { opacity: 0, y: 34 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.9,
+            ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+        },
+    },
+};
+
+function AnimatedSectionBackground() {
+    return (
+        <>
+            <div
+                className="absolute inset-0 opacity-[0.05] pointer-events-none"
+                style={{
+                    backgroundImage:
+                        "linear-gradient(to right, #991b1b 1.5px, transparent 1.5px), linear-gradient(to bottom, #991b1b 1.5px, transparent 1.5px)",
+                    backgroundSize: "45px 45px",
+                    backgroundAttachment: "fixed",
+                    backgroundPosition: "0 0",
+                }}
+            />
+
+            <motion.div
+                animate={{ x: [0, 24, 0], y: [0, 16, 0], scale: [1, 1.04, 1] }}
+                transition={{ duration: 36, repeat: Infinity, ease: "easeInOut" }}
+                className="fixed -left-28 top-12 h-80 w-80 rounded-full bg-red-200/20 blur-[95px] pointer-events-none md:h-[34rem] md:w-[34rem]"
+            />
+
+            <motion.div
+                animate={{ x: [0, -24, 0], y: [0, 26, 0], scale: [1, 1.03, 1] }}
+                transition={{ duration: 40, repeat: Infinity, ease: "easeInOut" }}
+                className="fixed -right-24 bottom-20 h-80 w-80 rounded-full bg-red-300/20 blur-[110px] pointer-events-none md:h-[36rem] md:w-[36rem]"
+            />
+        </>
+    );
+}
 
 export default function Overview() {
     const [loading, setLoading] = useState(true);
+    const [logoDocked, setLogoDocked] = useState(false);
+    const [heroIndex, setHeroIndex] = useState(0);
+    const [overviewConfig, setOverviewConfig] = useState<OverviewApiConfig | null>(null);
+
+    const { isMusicPlaying, toggleMusic, volume, setVolume, playMusic } = useMusic();
 
     useEffect(() => {
-        const audio = new Audio(SwaminarayanSound);
-        audio.volume = 0.7;
+        const loadOverviewConfig = async () => {
+            try {
+                const response = await fetch(`${API_URL}/overview/config`);
+                const data = await response.json();
 
-        audio.play().catch(() => {
-            console.log("Autoplay blocked. Waiting for user interaction...");
-        });
-
-        const handleGlobalClick = () => {
-            audio.play()
-                .then(() => {
-                    window.removeEventListener("click", handleGlobalClick);
-                    window.removeEventListener("touchstart", handleGlobalClick);
-                })
-                .catch(err => console.log("Playback failed:", err));
+                if (data.success) {
+                    setOverviewConfig(data.config);
+                }
+            } catch (error) {
+                console.error(error);
+            }
         };
 
-        window.addEventListener("click", handleGlobalClick);
-        window.addEventListener("touchstart", handleGlobalClick);
+        loadOverviewConfig();
 
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 2500);
+        const handleUpdated = () => loadOverviewConfig();
+        window.addEventListener("overview-config-updated", handleUpdated);
 
-        return () => {
-            clearTimeout(timer);
-            audio.pause();
-            window.removeEventListener("click", handleGlobalClick);
-            window.removeEventListener("touchstart", handleGlobalClick);
-        };
+        return () => window.removeEventListener("overview-config-updated", handleUpdated);
     }, []);
 
+    useEffect(() => {
+        const fetchAndPlayDefaultTrack = async () => {
+            try {
+                const res = await fetch(`${API_URL}/music/songs`);
+                const data = await res.json();
+
+                if (data.success && data.songs.length > 0) {
+                    window.dispatchEvent(
+                        new CustomEvent("change-gurukul-track", {
+                            detail: data.songs[0].audio_url,
+                        })
+                    );
+                }
+            } catch (err) {
+                console.error("Error setting default background track:", err);
+            }
+        };
+
+        fetchAndPlayDefaultTrack();
+    }, []);
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            setLogoDocked(true);
+            setLoading(false);
+        }, 5000);
+
+        return () => clearTimeout(timer);
+    }, []);
+
+    const resolvedLogoImg = overviewConfig?.logoImage || LogoImg;
+    const resolvedCampusImg = overviewConfig?.campusImage || BhayavadarImg;
+
+    const heroImages = useMemo(
+        () =>
+            overviewConfig?.heroImages?.length
+                ? overviewConfig.heroImages
+                : [SwaminarayanSceneImg, BhayavadarImg, SwaminarayanSceneImg, BhayavadarImg],
+        [overviewConfig]
+    );
+
+    const campusGalleryImages = useMemo(
+        () =>
+            overviewConfig?.campusGalleryImages?.length
+                ? overviewConfig.campusGalleryImages
+                : [BhayavadarImg, SwaminarayanSceneImg],
+        [overviewConfig]
+    );
+
+    const stackImageList = useMemo(
+        () =>
+            overviewConfig?.stackImages?.length
+                ? overviewConfig.stackImages
+                : [heroImages[0], resolvedCampusImg, resolvedLogoImg, BhayavadarImg],
+        [overviewConfig, heroImages, resolvedCampusImg, resolvedLogoImg]
+    );
+
+    const stackCards = useMemo(
+        () =>
+            stackImageList.map((src, index) => (
+                <div key={`${src}-${index}`} className="relative h-full w-full overflow-hidden shadow-2xl backdrop-blur-3xl rounded-2xl">
+                    <img
+                        src={src}
+                        alt={`Gurukul card ${index + 1}`}
+                        className="h-full w-full object-cover pointer-events-none"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-red-950/55 via-transparent to-transparent" />
+                </div>
+            )),
+        [stackImageList]
+    );
+
+    const chromaItems = useMemo(() => {
+        const images = overviewConfig?.chromaImages?.length
+            ? overviewConfig.chromaImages
+            : [SwaminarayanSceneImg, BhayavadarImg, LogoImg, SwaminarayanSceneImg, BhayavadarImg, LogoImg];
+
+        const titles = [
+            "Divine Blessings",
+            "Bhayavadar Gurukul",
+            "Gurukul Parampara",
+            "Aashirvad",
+            "Campus Life",
+            "Shree Gurukul",
+        ];
+
+        const subtitles = [
+            "Bhagwan Swaminarayan",
+            "Sanskar ane Shikshan",
+            "Bhakti, Vidya, Seva",
+            "Shanti ane Shraddha",
+            "Learning with Values",
+            "Red and White Theme",
+        ];
+
+        const colors = ["#DC2626", "#991B1B", "#EF4444", "#F87171", "#B91C1C", "#FCA5A5"];
+
+        return images.map((image, index) => ({
+            image,
+            title: titles[index % titles.length],
+            subtitle: subtitles[index % subtitles.length],
+            handle: "@gurukul",
+            location: index % 2 === 0 ? "Gurukul" : "Bhayavadar",
+            borderColor: colors[index % colors.length],
+            gradient: `linear-gradient(145deg, ${colors[index % colors.length]}, #120F17)`,
+        }));
+    }, [overviewConfig]);
+
+    useEffect(() => {
+        if (loading || heroImages.length === 0) return;
+
+        const interval = window.setInterval(() => {
+            setHeroIndex((prev) => (prev + 1) % heroImages.length);
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [loading, heroImages.length]);
+
+    const goToPrevHero = () => {
+        setHeroIndex((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1));
+    };
+
+    const goToNextHero = () => {
+        setHeroIndex((prev) => (prev + 1) % heroImages.length);
+    };
+
     const handleStart = () => {
-        const audio = new Audio(SwaminarayanSound);
-        audio.volume = 0.7;
-
-        audio.play()
-            .then(() => {
-            })
-            .catch((error) => {
-                console.log("Audio play failed:", error);
-            });
-
+        setLogoDocked(true);
         setLoading(false);
+
+        setTimeout(() => {
+            playMusic();
+        }, 300);
     };
 
     return (
         <>
             <AnimatePresence>
-
                 {loading && (
                     <motion.div
-                        className="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-red-900 select-none"
+                        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-red-900 select-none"
                         exit={{
                             opacity: 0,
-                            y: -50,
-                            transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] }
+                            transition: { duration: 0.85, ease: [0.76, 0, 0.24, 1] },
                         }}
                     >
-                        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                        <div
+                            className="absolute inset-0 opacity-[0.035] pointer-events-none"
                             style={{
-                                backgroundImage: `linear-gradient(to right, #ffffff 1.5px, transparent 1.5px), linear-gradient(to bottom, #ffffff 1.5px, transparent 1.5px)`,
-                                backgroundSize: '45px 45px'
+                                backgroundImage:
+                                    "linear-gradient(to right, #ffffff 1.5px, transparent 1.5px), linear-gradient(to bottom, #ffffff 1.5px, transparent 1.5px)",
+                                backgroundSize: "45px 45px",
                             }}
                         />
 
                         <div className="relative flex flex-col items-center justify-center">
                             <motion.div
-                                initial={{ scale: 0.8, opacity: 0 }}
-                                animate={{ scale: 1.2, opacity: 0.2 }}
-                                transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
-                                className="absolute w-64 h-64 bg-white rounded-full blur-3xl pointer-events-none"
+                                initial={{ scale: 0.85, opacity: 0 }}
+                                animate={{ scale: 1.12, opacity: 0.18 }}
+                                transition={{
+                                    duration: 3.2,
+                                    repeat: Infinity,
+                                    repeatType: "reverse",
+                                    ease: "easeInOut",
+                                }}
+                                className="absolute h-64 w-64 rounded-full bg-white blur-3xl pointer-events-none"
                             />
 
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.3, rotate: -10, filter: "blur(10px)" }}
-                                animate={{ opacity: 1, scale: 1, rotate: 0, filter: "blur(0px)" }}
-                                transition={{
-                                    duration: 1.2,
-                                    ease: [0.34, 1.56, 0.64, 1]
+                                layoutId="gurukul-main-logo"
+                                initial={{
+                                    opacity: 0,
+                                    scale: 0.35,
+                                    rotate: -8,
+                                    filter: "blur(10px)",
                                 }}
-                                className="w-32 h-32 md:w-40 md:h-40 bg-white/10 backdrop-blur-md rounded-[40px] border border-white/20 shadow-2xl flex items-center justify-center p-5 z-10"
+                                animate={{
+                                    opacity: 1,
+                                    scale: 1,
+                                    rotate: 0,
+                                    filter: "blur(0px)",
+                                }}
+                                transition={{ duration: 1.3, ease: [0.34, 1.56, 0.64, 1] }}
+                                className="z-10 flex h-32 w-32 items-center justify-center rounded-[40px] border border-white/20 bg-white/10 p-5 shadow-2xl backdrop-blur-md md:h-40 md:w-40"
                             >
-                                <img src={LogoImg} className="w-full h-full object-contain" alt="Gurukul Main Logo" />
+                                <img
+                                    src={resolvedLogoImg}
+                                    className="h-full w-full object-contain"
+                                    alt="Gurukul Main Logo"
+                                />
                             </motion.div>
 
                             <motion.h2
-                                initial={{ opacity: 0, y: 30 }}
+                                initial={{ opacity: 0, y: 24 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
-                                className="text-white font-black text-3xl md:text-4xl mt-6 tracking-widest text-center"
+                                transition={{ delay: 0.45, duration: 0.9, ease: "easeOut" }}
+                                className="mt-6 text-center text-3xl font-black tracking-widest text-white md:text-4xl"
                             >
                                 GURUKUL
                             </motion.h2>
+
                             <motion.button
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 18 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.8 }}
+                                transition={{ delay: 0.75, duration: 0.75 }}
                                 onClick={handleStart}
-                                className="mt-6 px-6 py-3 bg-white text-red-900 font-bold rounded-full flex items-center gap-2 shadow-lg hover:bg-gray-100 hover:scale-105 active:scale-95 transition-all cursor-pointer z-50 text-sm md:text-base"
+                                className="z-50 mt-6 flex cursor-pointer items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-red-900 shadow-lg transition-all hover:scale-105 hover:bg-gray-100 active:scale-95 md:text-base"
                             >
                                 <FaPlay className="text-xs" />
                                 Jay Swaminarayan
@@ -124,146 +330,264 @@ export default function Overview() {
                 )}
             </AnimatePresence>
 
-            <div className="w-screen min-h-screen scrolls flex flex-col items-center overflow-x-hidden scrollbar-hide">
-                <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-                    <motion.div
-                        animate={{ x: [0, 50, 0], y: [0, 30, 0], scale: [1, 1.1, 1] }}
-                        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute -top-20 -left-20 w-72 h-72 md:w-125 md:h-125 bg-red-100 rounded-full blur-[80px] md:blur-[100px] opacity-60"
+            <main className="w-screen overflow-x-hidden bg-white scrollbar-hide">
+                <div className="fixed left-0 top-4 z-[9999] flex -translate-x-[13.8rem] flex-col items-center gap-3 rounded-r-2xl bg-white py-2 pl-4 pr-5 shadow-2xl ring-1 ring-red-100 transition-transform duration-300 hover:translate-x-0 md:top-6">
+                    <ElasticSlider
+                        defaultValue={volume}
+                        startingValue={0}
+                        maxValue={100}
+                        isStepped
+                        stepSize={5}
+                        leftIcon={<FaVolumeDown className="text-xs" />}
+                        rightIcon={<FaVolumeUp className="text-xs" />}
+                        onChange={setVolume}
+                        className="w-36"
                     />
-                    <motion.div
-                        animate={{ x: [0, -40, 0], y: [0, 60, 0] }}
-                        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute top-1/2 -right-10 w-80 h-80 md:w-150 md:h-150 bg-blue-50 rounded-full blur-[100px] md:blur-[120px] opacity-50"
-                    />
-                </div>
 
-                <div
-                    className="fixed inset-0 -z-20 opacity-[0.04] pointer-events-none"
-                    style={{
-                        backgroundImage: `
-                            linear-gradient(to right, #991b1b 1.5px, transparent 1.5px),
-                            linear-gradient(to bottom, #991b1b 1.5px, transparent 1.5px)
-                        `,
-                        backgroundSize: '45px 45px',
-                        animation: 'grid-move 15s linear infinite'
-                    }}
-                >
-                    <style>{`
-                        @keyframes grid-move {
-                            0% { background-position: 0 0; }
-                            100% { background-position: 45px 45px; }
-                        }
-                    `}</style>
-                </div>
-
-                {/* ટોપ હેડર બાર */}
-                <div className="fixed top-0 left-0 w-full z-50 p-2 md:p-4">
-                    <header className="w-full mx-auto rounded-2xl shadow-xl md:rounded-3xl h-16 md:h-20 bg-red-800 flex justify-between items-center px-4 md:px-8 border border-white/10 backdrop-blur-sm">
-                        <div className="flex items-center gap-3 md:gap-4">
-                            <div className="flex items-center justify-center bg-linear-to-tl from-red-700/70 to-gray-200/70 border border-white/20 rounded-xl w-10 h-10 md:w-12 md:h-12 shadow-inner">
-                                <GiPagoda className="text-xl md:text-2xl text-gray-50" />
-                            </div>
-                            <h1 className="text-lg md:text-2xl text-white font-bold tracking-tight">
-                                <span className="block sm:hidden">GURUKUL</span>
-                                <span className="hidden sm:block">GURUKUL-PLATFORM</span>
-                            </h1>
-                        </div>
-
-                        <Link to={`/login`} className="group relative px-4 md:px-6 h-10 md:h-12 rounded-xl md:rounded-2xl bg-gray-50 cursor-pointer shadow-md hover:bg-white hover:scale-105 active:scale-95 transition-all duration-200 flex justify-center items-center gap-2">
-                            <span className="text-sm md:text-base font-bold text-red-800">Login</span>
-                            <FaArrowRight className="text-xs md:text-sm text-red-800 group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                    </header>
-                </div>
-
-                <div className="h-20 md:h-28 w-full"></div>
-
-                {/* સેન્ટ્રલ હીરો સેક્શન */}
-                <div className="relative w-full flex flex-col justify-center items-center px-6 py-10 md:py-16">
-                    <div className="flex flex-col gap-6 md:gap-8 justify-center items-center mb-16 md:mb-24">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            className="w-40 h-40 md:w-48 md:h-48 flex flex-col gap-1 justify-center items-center rounded-[40px] md:rounded-[50px] border-3 border-red-300 bg-linear-to-tl from-red-800 to-red-600 shadow-2xl"
-                        >
-                            <GiPagoda className="text-5xl md:text-6xl text-gray-50" />
-                            <p className="text-base md:text-xl font-bold text-gray-50 uppercase tracking-widest">Gurukul</p>
-                        </motion.div>
-
-                        <div className="select-none text-center">
-                            <h1 className="text-5xl md:text-7xl font-black text-red-800 tracking-tighter">
-                                GURUKUL
-                            </h1>
-                        </div>
-                    </div>
-
-                    {/* ગ્રીડ કેટેગરીઝ કાર્ડ્સ */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-14 w-full max-w-5xl pb-16">
-                        <div className="group flex flex-col items-center gap-4">
-                            <div className="w-40 h-40 md:w-44 md:h-44 flex flex-col gap-1 justify-center items-center rounded-[40px] md:rounded-[50px] border-3 border-green-300 bg-linear-to-tl from-green-600 to-green-400 shadow-xl group-hover:scale-110 transition-all duration-500 group-hover:shadow-green-500/30">
-                                <GrCloudComputer className="text-4xl md:text-5xl text-gray-50" />
-                                <p className="text-lg font-bold text-gray-50">Vision</p>
-                            </div>
-                        </div>
-
-                        <div className="group flex flex-col items-center gap-4">
-                            <div className="w-40 h-40 md:w-44 md:h-44 flex flex-col gap-1 justify-center items-center rounded-[40px] md:rounded-[50px] border-3 border-blue-300 bg-linear-to-tl from-blue-600 to-blue-400 shadow-xl group-hover:scale-110 transition-all duration-500 group-hover:shadow-blue-500/30">
-                                <BsAppleMusic className="text-4xl md:text-5xl text-gray-50" />
-                                <p className="text-lg font-bold text-gray-50">Music</p>
-                            </div>
-                        </div>
-
-                        <div className="group flex flex-col items-center gap-4 lg:col-span-1 sm:col-span-2 lg:sm:col-span-1">
-                            <div className="w-40 h-40 md:w-44 md:h-44 flex flex-col gap-1 justify-center items-center rounded-[40px] md:rounded-[50px] border-3 border-orange-300 bg-linear-to-tl from-orange-600 to-orange-400 shadow-xl group-hover:scale-110 transition-all duration-500 group-hover:shadow-orange-500/30 mx-auto">
-                                <GiHumanPyramid className="text-4xl md:text-5xl text-gray-50" />
-                                <p className="text-lg font-bold text-gray-50 text-center">Culture</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* ઈમેજ સેક્શન */}
-                <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-6 justify-center items-center px-6 py-10 md:pb-24">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6 }}
-                        className="w-full lg:w-[60%] h-64 md:h-100 rounded-[40px] bg-red-800 shadow-2xl p-4 md:p-6"
+                    <button
+                        type="button"
+                        onClick={toggleMusic}
+                        className="flex h-10 min-w-16 items-center justify-center rounded-full bg-red-800 px-4 text-sm font-bold text-white shadow-md transition-all hover:bg-red-700 active:scale-95"
                     >
-                        <div className="w-full h-full bg-amber-50 overflow-hidden rounded-[30px] border border-red-950/20 shadow-inner">
-                            <img src={BhayavadarImg} className="w-full h-full object-cover" alt="Bhayavadar Gurukul Overview" />
-                        </div>
+                        {isMusicPlaying ? "Stop" : "Start"}
+                    </button>
+                </div>
+
+                <AnimatePresence>
+                    {logoDocked && (
+                        <motion.div
+                            layoutId="gurukul-main-logo"
+                            initial={{ opacity: 1 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 180, damping: 24 }}
+                            className="fixed right-32 top-4 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-red-100 bg-white p-2 shadow-2xl md:right-40 md:top-6 md:h-12 md:w-12"
+                        >
+                            <img
+                                src={resolvedLogoImg}
+                                alt="Gurukul Logo"
+                                className="h-full w-full object-contain"
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                <Link
+                    to="/login"
+                    className="group fixed right-4 top-4 z-50 flex h-11 items-center justify-center gap-2 rounded-full bg-white px-5 font-bold text-red-800 shadow-2xl ring-1 ring-red-100 transition-all hover:scale-105 hover:bg-red-50 active:scale-95 md:right-8 md:top-6 md:h-12 md:px-6"
+                >
+                    <span className="text-sm md:text-base">Login</span>
+                    <FaArrowRight className="text-xs transition-transform group-hover:translate-x-1 md:text-sm" />
+                </Link>
+
+                <section className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-red-950">
+                    <AnimatePresence mode="wait">
+                        <motion.img
+                            key={heroIndex}
+                            src={heroImages[heroIndex]}
+                            alt="Gurukul Hero Background"
+                            initial={{ opacity: 0, scale: 1.06 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.03 }}
+                            transition={{ duration: 1.15, ease: "easeInOut" }}
+                            className="absolute inset-0 h-full w-full object-cover"
+                        />
+                    </AnimatePresence>
+
+                    <div className="absolute inset-0 bg-linear-to-b from-red-950/55 via-red-900/10 to-red-950/75" />
+
+                    <motion.div
+                        variants={fadeUp}
+                        initial="hidden"
+                        animate="visible"
+                        className="relative z-10 mx-auto max-w-4xl px-6 text-center text-white"
+                    >
+                        <p className="text-sm font-black uppercase tracking-[0.35em] text-white/80 md:text-base">
+                            {overviewConfig?.heroSubtitle || "Shree Swaminarayan Gurukul"}
+                        </p>
+                        <h1 className="mt-5 text-5xl font-black tracking-tight drop-shadow-2xl md:text-7xl">
+                            {overviewConfig?.heroTitle || "Jay Swaminarayan"}
+                        </h1>
                     </motion.div>
 
-                    <div className="w-full lg:w-[40%] flex flex-col sm:flex-row lg:flex-col gap-4 h-full">
+                    <button
+                        type="button"
+                        onClick={goToPrevHero}
+                        className="absolute left-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-red-800 shadow-2xl ring-1 ring-red-100 transition-all hover:scale-105 hover:bg-white active:scale-95 md:left-8 md:h-12 md:w-12"
+                        aria-label="Previous image"
+                    >
+                        <FaChevronLeft />
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={goToNextHero}
+                        className="absolute right-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-red-800 shadow-2xl ring-1 ring-red-100 transition-all hover:scale-105 hover:bg-white active:scale-95 md:right-8 md:h-12 md:w-12"
+                        aria-label="Next image"
+                    >
+                        <FaChevronRight />
+                    </button>
+                </section>
+
+                <section className="relative min-h-screen w-full overflow-hidden px-5 py-16 md:px-8 md:py-24">
+                    <AnimatedSectionBackground />
+
+                    <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center">
                         <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            className="w-full h-48 md:h-47.5 rounded-[30px] bg-red-800 p-4 shadow-2xl"
+                            variants={fadeUp}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.35 }}
+                            className="flex flex-col items-center text-center"
                         >
-                            <div className="w-full h-full bg-amber-50 rounded-[20px] overflow-hidden border border-red-950/20 shadow-inner">
-                                <img src={BhayavadarImg} className="w-full h-full object-cover animate-pulse" alt="Gurukul Gallery 1" />
+                            <div className="flex h-32 w-32 flex-col items-center justify-center gap-1 rounded-[2.25rem] border-[3px] border-red-200 bg-linear-to-tl from-red-800 to-red-600 shadow-2xl md:h-44 md:w-44 md:rounded-[3rem]">
+                                <GiPagoda className="text-5xl text-white md:text-6xl" />
+                                <p className="text-base font-bold uppercase tracking-widest text-white md:text-xl">
+                                    Gurukul
+                                </p>
                             </div>
+
+                            <h2 className="mt-8 text-5xl font-black tracking-tight text-red-800 md:text-7xl">
+                                GURUKUL
+                            </h2>
+
+                            <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-red-700 md:text-xl md:leading-8">
+                                Sanskar, bhakti ane shikshan no divya anubhav.
+                            </p>
                         </motion.div>
 
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 0.2 }}
-                            className="w-full h-48 md:h-47.5 p-4 rounded-[30px] bg-red-800 shadow-2xl"
-                        >
-                            <div className="w-full h-full bg-amber-50 overflow-hidden rounded-[20px] border border-red-950/20 shadow-inner">
-                                <img src={BhayavadarImg} className="w-full h-full object-cover" alt="Gurukul Gallery 2" />
+                        <div className="mt-16 flex w-full flex-col items-center gap-6 lg:flex-row">
+                            <motion.div
+                                variants={fadeUp}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true, amount: 0.25 }}
+                                className="h-72 w-full rounded-[2.5rem] bg-red-800 p-4 shadow-2xl md:h-112 md:p-6 lg:w-[62%]"
+                            >
+                                <div className="h-full w-full overflow-hidden rounded-[1.75rem] border border-red-950/20 bg-white shadow-inner">
+                                    <img
+                                        src={resolvedCampusImg}
+                                        className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                                        alt="Bhayavadar Gurukul Overview"
+                                    />
+                                </div>
+                            </motion.div>
+
+                            <div className="flex w-full flex-col gap-4 sm:flex-row lg:w-[38%] lg:flex-col">
+                                {campusGalleryImages.slice(0, 2).map((src, index) => (
+                                    <motion.div
+                                        key={`${src}-${index}`}
+                                        variants={fadeUp}
+                                        initial="hidden"
+                                        whileInView="visible"
+                                        viewport={{ once: true, amount: 0.25 }}
+                                        className="h-52 w-full rounded-4xl bg-red-800 p-4 shadow-2xl md:h-54"
+                                    >
+                                        <div className="h-full w-full overflow-hidden rounded-[1.25rem] border border-red-950/20 bg-white shadow-inner">
+                                            <img
+                                                src={src}
+                                                className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                                                alt={`Gurukul Gallery ${index + 1}`}
+                                            />
+                                        </div>
+                                    </motion.div>
+                                ))}
                             </div>
-                        </motion.div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                </section>
+
+                {(overviewConfig?.showStackSection ?? true) && (
+                    <section className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-5 py-20 md:px-8">
+                        <AnimatedSectionBackground />
+
+                        <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
+                            <motion.div
+                                variants={fadeUp}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true, amount: 0.35 }}
+                                className="text-center text-red-800 lg:text-left"
+                            >
+                                <p className="text-sm font-bold uppercase tracking-[0.35em] text-red-700">
+                                    Gurukul Gallery
+                                </p>
+
+                                <h2 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">
+                                    {overviewConfig?.stackTitle || "Memories in Motion"}
+                                </h2>
+
+                                <p className="mx-auto mt-5 max-w-xl text-base font-semibold leading-8 text-red-700/80 md:text-lg lg:mx-0">
+                                    {overviewConfig?.stackSubtitle || "Drag karo, click karo, athva wait karo."}
+                                </p>
+                            </motion.div>
+
+                            <motion.div
+                                variants={fadeUp}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true, amount: 0.35 }}
+                                className="mx-auto h-76 w-76 md:h-108 md:w-108"
+                            >
+                                <Stack
+                                    randomRotation
+                                    sensitivity={160}
+                                    sendToBackOnClick
+                                    autoplay
+                                    autoplayDelay={4200}
+                                    pauseOnHover
+                                    mobileClickOnly
+                                    cards={stackCards}
+                                    animationConfig={{ stiffness: 180, damping: 26 }}
+                                />
+                            </motion.div>
+                        </div>
+                    </section>
+                )}
+
+                {(overviewConfig?.showChromaSection ?? true) && (
+                    <section className="relative min-h-screen w-full overflow-hidden px-5 py-20 md:px-8 scrollbar-hide">
+                        <AnimatedSectionBackground />
+
+                        <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center">
+                            <motion.div
+                                variants={fadeUp}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true, amount: 0.35 }}
+                                className="text-center"
+                            >
+                                <p className="text-xs font-bold uppercase tracking-[0.35em] text-red-700 md:text-sm">
+                                    Chroma Stories
+                                </p>
+                                <h2 className="mt-3 text-4xl font-black tracking-tight text-red-800 md:text-6xl">
+                                    {overviewConfig?.chromaTitle || "Gurukul Highlights"}
+                                </h2>
+                                <p className="mx-auto mt-5 max-w-2xl text-base font-semibold leading-8 text-red-700/80 md:text-lg">
+                                    {overviewConfig?.chromaSubtitle ||
+                                        "Move cursor over cards to reveal color spotlight."}
+                                </p>
+                            </motion.div>
+
+                            <motion.div
+                                variants={fadeUp}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true, amount: 0.2 }}
+                                className="mt-14 h-350 w-full rounded-4xl md:h-auto"
+                            >
+                                <ChromaGrid
+                                    items={chromaItems}
+                                    radius={300}
+                                    damping={0.7}
+                                    fadeOut={0.8}
+                                    ease="power3.out"
+                                />
+                            </motion.div>
+                        </div>
+                    </section>
+                )}
+            </main>
         </>
     );
 }

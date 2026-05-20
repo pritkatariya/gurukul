@@ -1,14 +1,18 @@
-import { motion } from "motion/react"; 
+import { motion } from "motion/react";
 import { FaUserAlt, FaLock, FaArrowRight } from "react-icons/fa";
-import Logo from '../assets/gurukul logo.png'; 
+import Logo from '../assets/gurukul logo.png';
 import '../App.css';
 import Input from "../Components/commen/Input";
+import { FaVolumeDown, FaVolumeUp } from "react-icons/fa";
+import ElasticSlider from "../Components/ElasticSlider";
+import { useMusic } from "../Components/MusicProvider";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Application from "../pages/Application";
 
 export default function Login() {
+    const { isMusicPlaying, toggleMusic, volume, setVolume } = useMusic();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -38,7 +42,7 @@ export default function Login() {
 
         if (username === 'super-admin' && password === 'admin123') {
             toast.success('Super Admin Login Successful! 🎉');
-            localStorage.setItem('user', JSON.stringify({ 
+            localStorage.setItem('user', JSON.stringify({
                 id: 123098, username: 'super-admin', role: 'admin', full_name: 'Super Admin Principal', department_id: 0, profile_image_url: null
             }));
             localStorage.setItem('user_role', 'SUPER_ADMIN');
@@ -75,7 +79,27 @@ export default function Login() {
 
     return (
         <div className="w-screen min-h-screen flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-20 overflow-hidden relative selection:bg-red-200 p-6 scrollbar-hide">
+            <div className="fixed left-0 top-4 z-9999 flex flex-col -translate-x-55.5 items-center gap-3 rounded-r-2xl bg-white py-2 pl-4 pr-5 shadow-2xl ring-1 ring-red-100 transition-transform duration-300 hover:translate-x-0 md:top-6">
+                <ElasticSlider
+                    defaultValue={volume}
+                    startingValue={0}
+                    maxValue={100}
+                    isStepped
+                    stepSize={5}
+                    leftIcon={<FaVolumeDown className="text-xs" />}
+                    rightIcon={<FaVolumeUp className="text-xs" />}
+                    onChange={setVolume}
+                    className="w-36"
+                />
 
+                <button
+                    type="button"
+                    onClick={toggleMusic}
+                    className="flex h-10 min-w-16 items-center justify-center rounded-full bg-red-800 px-4 text-sm font-bold text-white shadow-md transition-all hover:bg-red-700 active:scale-95"
+                >
+                    {isMusicPlaying ? "Stop" : "Start"}
+                </button>
+            </div>
             <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
                 <motion.div
                     animate={{ x: [0, 50, 0], y: [0, 30, 0], scale: [1, 1.1, 1] }}
@@ -151,8 +175,8 @@ export default function Login() {
                 </form>
 
                 <div className="mt-10 flex flex-col gap-3 items-center">
-                    <button 
-                        onClick={() => openApplicationWithSubject("Request for password reset")} 
+                    <button
+                        onClick={() => openApplicationWithSubject("Request for password reset")}
                         className="text-[10px] font-black text-red-800/40 hover:text-red-800 uppercase tracking-widest transition-colors cursor-pointer focus:outline-none"
                     >
                         Forgot password for Application?
