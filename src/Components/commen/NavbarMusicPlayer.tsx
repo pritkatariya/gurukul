@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useMusic } from "../MusicProvider";
 import { FaPlay, FaPause, FaForward, FaBackward, FaSearch, FaMusic, FaChevronDown } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion"; // 🎯 જેસ્ચર્સ અને સ્વાઇપ માટે
+import { motion, AnimatePresence } from "framer-motion";
 
 type Track = {
     id: number;
@@ -17,7 +17,6 @@ export default function NavbarMusicPlayer() {
     const [searchQuery, setSearchQuery] = useState("");
     const [showDropdown, setShowDropdown] = useState(false);
     
-    // 🎯 મોબાઈલ બોટમ શીટ ઓપન/ક્લોઝ સ્ટેટ
     const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
 
     let API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -75,10 +74,8 @@ export default function NavbarMusicPlayer() {
 
     const currentTrack = currentIndex !== null ? trackList[currentIndex] : null;
 
-    // 🎯 મુખ્ય કંટ્રોલ કમ્પોનન્ટ (જે ડેસ્કટોપ અને મોબાઈલ શીટ બંનેમાં રીયુઝ થશે)
     const PlayerControls = () => (
         <>
-            {/* 🔍 સર્ચ ઇનપુટ */}
             <div className="relative w-full">
                 <div className="flex items-center rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5">
                     <FaSearch className="mr-2 text-xs text-gray-400" />
@@ -116,7 +113,6 @@ export default function NavbarMusicPlayer() {
                 )}
             </div>
 
-            {/* 🎵 કરન્ટલી પ્લેઇંગ સોંગ */}
             <div className="w-full text-center py-1 border-b border-gray-100">
                 <p className="text-xs font-black text-red-900 truncate flex items-center justify-center gap-1">
                     <FaMusic className={`text-[10px] ${isMusicPlaying ? "animate-bounce" : ""}`} />
@@ -127,7 +123,6 @@ export default function NavbarMusicPlayer() {
                 </p>
             </div>
 
-            {/* 🎮 પ્લેયર્સ કંટ્રોલ બટન */}
             <div className="flex items-center justify-center gap-4 mt-0.5">
                 <button 
                     type="button" 
@@ -158,13 +153,11 @@ export default function NavbarMusicPlayer() {
 
     return (
         <>
-            {/* 💻 ૧. ડેસ્કટોપ વ્યૂ (મોટા ડિવાઇસ પર જ દેખાશે) */}
             <div className="hidden md:flex flex-col items-center gap-2 w-full bg-white p-1 rounded-xl">
                 <PlayerControls />
             </div>
 
-            {/* 📱 ૨. મોબાઈલ વ્યુ (નાની સ્ક્રીન પર બોટમ મિની પ્લેયર તરીકે દેખાશે) */}
-            <div className="block md:hidden fixed bottom-0 left-0 right-0 z-[999] bg-white border-t border-slate-100 px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] rounded-t-2xl cursor-pointer"
+            <div className="block md:hidden fixed bottom-0 left-0 right-0 z-999 bg-white border-t border-slate-100 px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] rounded-t-2xl cursor-pointer"
                  onClick={() => setIsMobileSheetOpen(true)}>
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2 overflow-hidden w-[65%]">
@@ -183,41 +176,35 @@ export default function NavbarMusicPlayer() {
                         </button>
                     </div>
                 </div>
-                {/* મિની નોચ લાઇન જે બતાવે છે કે આને ઉપર ખેંચી શકાય છે */}
                 <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mt-2" />
             </div>
 
-            {/* 🎯 ૩. મોબાઈલ સ્વાઈપેબલ ફૂલ બોટમ શીટ (Drag & Swipe logic) */}
             <AnimatePresence>
                 {isMobileSheetOpen && (
                     <>
-                        {/* બેકગ્રાઉન્ડ ડાર્ક બ્લર પડદો */}
                         <motion.div 
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 0.4 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsMobileSheetOpen(false)}
-                            className="fixed inset-0 bg-black z-[1000] md:hidden"
+                            className="fixed inset-0 bg-black z-1000 md:hidden"
                         />
 
-                        {/* અસલી ખેંચી શકાય તેવું કાર્ડ શીટ */}
                         <motion.div
-                            drag="y" // 🎯 માત્ર ઉભી દિશામાં જ ડ્રેગ થશે
+                            drag="y"
                             dragConstraints={{ top: 0, bottom: 0 }}
-                            dragElastic={{ top: 0.1, bottom: 0.75 }} // નીચે ખેંચો તો મસ્ત સ્પ્રિંગ ઇફેક્ટ આવશે
+                            dragElastic={{ top: 0.1, bottom: 0.75 }}
                             onDragEnd={(_e, info) => {
-                                // જો યુજરે ૧20px થી વધારે નીચે ખેંચ્યું હોય તો આખું પ્લેયર બંધ થઈ જશે
                                 if (info.offset.y > 120) {
                                     setIsMobileSheetOpen(false);
                                 }
                             }}
-                            initial={{ y: "100%" }} // નીચેથી ઉપર આવશે
+                            initial={{ y: "100%" }}
                             animate={{ y: 0 }}
                             exit={{ y: "100%" }}
                             transition={{ type: "spring", damping: 25, stiffness: 220 }}
-                            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[2.5rem] p-6 shadow-2xl z-[1001] flex flex-col gap-5 pb-10 md:hidden border-t border-slate-100"
+                            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[2.5rem] p-6 shadow-2xl z-1001 flex flex-col gap-5 pb-10 md:hidden border-t border-slate-100"
                         >
-                            {/* 🎯 ડ્રેગ હેન્ડલ બાર (યુઝર આ લાઈનને પકડીને નીચે સ્લાઇડ કરી શકે) */}
                             <div className="w-12 h-1.5 bg-slate-300/80 rounded-full mx-auto mb-1 cursor-grab active:cursor-grabbing" />
                             
                             <div className="flex justify-between items-center px-1">
@@ -232,7 +219,6 @@ export default function NavbarMusicPlayer() {
                                 </button>
                             </div>
 
-                            {/* પ્લેયર અને સર્ચ બાર કંટ્રોલ્સ */}
                             <div className="flex flex-col gap-4">
                                 <PlayerControls />
                             </div>
