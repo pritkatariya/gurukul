@@ -14,6 +14,7 @@ export default function Layout() {
   const { isMusicPlaying, volume, setVolume } = useMusic();
 
   useEffect(() => {
+    isMusicPlaying
     const findAndExposeAudio = () => {
       const audios = document.getElementsByTagName("audio");
       if (audios.length > 0) {
