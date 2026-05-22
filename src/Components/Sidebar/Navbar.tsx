@@ -10,6 +10,7 @@ import {
     FaSlidersH,
     FaMusic,
     FaCalendarPlus,
+    FaQuoteLeft,
     FaWater,
     FaEye,
 } from "react-icons/fa";
