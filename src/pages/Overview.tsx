@@ -1,12 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
+
 import "../App.css";
 import { GiPagoda } from "react-icons/gi";
+import { BsCalendarEventFill } from "react-icons/bs";
 import {
     FaArrowRight,
     FaChevronLeft,
     FaChevronRight,
+    FaEye,
     FaPlay,
+    FaWater,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useMusic } from "../Components/MusicProvider";
@@ -69,6 +73,7 @@ export default function Overview() {
     const [logoDocked, setLogoDocked] = useState(false);
     const [heroIndex, setHeroIndex] = useState(0);
     const [overviewConfig, setOverviewConfig] = useState<OverviewApiConfig | null>(null);
+    const darshanSectionRef = useRef<HTMLDivElement>(null); // આ રિફ છે જે સેક્શનને ઓળખશે
 
     const { isMusicPlaying, toggleMusic, playMusic } = useMusic();
 
@@ -105,6 +110,9 @@ export default function Overview() {
         BhayavadarImg,
         SwaminarayanSceneImg,
     ];
+    const scrollToDarshan = () => {
+        darshanSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
     useEffect(() => {
         const fetchAndPlayDefaultTrack = async () => {
@@ -278,7 +286,27 @@ export default function Overview() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+                <motion.div
+                    className="fixed top-24 left-5 z-40 w-20 md:w-90 p-2 gap-4 flex flex-col rounded-3xl bg-white/20 backdrop-blur-md shadow-lg border border-white/20"
+                    initial={{ x: -100, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                >
+                    <Link to="/Amrut-Aachaman" className="flex justify-between items-center px-5  bg-white rounded-xl shadow-sm hover:scale-[1.02] transition-transform cursor-pointer">
+                        <div className="w-10 h-10 flex justify-center items-center text-red-800 border-red-100"><FaWater size={22} /></div>
+                        <p className="p-4 text-sm md:flex hidden font-bold text-red-800 uppercase tracking-wider">Amrut nu Achaman</p>
+                    </Link>
 
+                    <div onClick={scrollToDarshan} className="flex justify-between items-center px-4 bg-white rounded-xl shadow-sm hover:scale-[1.02] hover:bg-amber-50 transition-all cursor-pointer">
+                        <div className="w-10 h-10 flex justify-center items-center text-red-800 border-red-100"><FaEye size={22} /></div>
+                        <p className="p-4 text-sm md:flex hidden font-bold text-red-800 uppercase tracking-wider">Daily Darshan</p>
+                    </div>
+
+                    <div className="flex justify-between items-center px-4 bg-white rounded-xl shadow-sm hover:scale-[1.02] transition-transform cursor-pointer">
+                        <div className="w-10 h-10 flex justify-center items-center text-red-800 border-red-100"><BsCalendarEventFill size={20} /></div>
+                        <p className="p-4 text-sm md:flex hidden font-bold text-red-800 uppercase tracking-wider">Activities</p>
+                    </div>
+                </motion.div>
                 <Link
                     to="/login"
                     className="group fixed right-4 top-4 z-50 flex h-11 items-center justify-center gap-2 rounded-full bg-white px-5 font-bold text-red-800 shadow-2xl ring-1 ring-red-100 transition-all hover:scale-105 hover:bg-red-50 active:scale-95 md:right-8 md:top-6 md:h-12 md:px-6"
@@ -352,7 +380,7 @@ export default function Overview() {
                             </h2>
 
                             <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-red-700 md:text-xl md:leading-8">
-                              VIDYA, SADVIDYA, ANE BRAHMVIDYA NO ANOKHO SANGAM.
+                                VIDYA, SADVIDYA, ANE BRAHMVIDYA NO ANOKHO SANGAM.
                             </p>
                         </motion.div>
 
@@ -398,7 +426,7 @@ export default function Overview() {
                         </div>
                     </div>
                 </section>
-                <section className="relative min-h-screen w-full overflow-hidden px-4 py-14 sm:px-5 md:px-8 md:py-24">
+                <section ref={darshanSectionRef} className="relative min-h-screen w-full overflow-hidden px-4 py-14 sm:px-5 md:px-8 md:py-24">
                     <AnimatedSectionBackground />
 
                     <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center">
