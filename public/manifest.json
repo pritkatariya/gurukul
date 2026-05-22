@@ -1,12 +1,14 @@
 {
-  "name": "Gurukul Management System",
+  "name": "Gurukul Sevak Matrix",
   "short_name": "Gurukul",
+  "description": "Gurukul Sevak Matrix system to manage administration and users efficiently.",
   "start_url": "/",
-  "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"], 
-  "background_color": "#ffffff",
-  "theme_color": "#800000",
   "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#800000",
+  "theme_color": "#800000",
+  "categories": ["education", "productivity"],
   "icons": [
     {
       "src": "/logo.png",
@@ -20,5 +22,13 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/deshbord/user-list",
+      "description": "Go to User List Dashboard"
+    }
+  ],
+  "prefer_related_applications": false
 }
