@@ -8,7 +8,6 @@ import {
     FaHashtag,
     FaCamera,
     FaTimes,
-    FaBuilding,
 } from "react-icons/fa";
 import { toast } from "sonner";
 import Input from "../../../Components/commen/Input";
@@ -26,7 +25,7 @@ interface DeptOption {
 }
 
 export default function CreateNewUser() {
-    
+
     const [searchParams] = useSearchParams();
     const imageFromUrl = searchParams.get("image") || "";
     const navigate = useNavigate();
@@ -39,13 +38,11 @@ export default function CreateNewUser() {
     const userRaw = localStorage.getItem("user");
 
     let userId: number | null = null;
-    let userDepartmentId = "0";
 
     if (userRaw) {
         try {
             const parsed = JSON.parse(userRaw);
             userId = parsed.id ? Number(parsed.id) : null;
-            userDepartmentId = parsed.department_id !== undefined ? String(parsed.department_id) : "0";
         } catch (error) {
             console.error(error);
         }
@@ -244,6 +241,8 @@ export default function CreateNewUser() {
                 dataToSend.append("existingImageUrl", imageFromUrl);
             }
 
+
+
             const response = await fetch(`${API_URL}/create/user`, {
                 method: "POST",
                 body: dataToSend,
@@ -251,8 +250,16 @@ export default function CreateNewUser() {
 
             const data = await response.json();
 
+            if (!response.ok) {
+                console.log("Create user error:", data);
+                toast.error(data.detail || data.message || "Failed to create user");
+                return;
+            }
+
             if (response.ok && data.success) {
                 toast.success("User created successfully!");
+
+                const createdSuid = formData.suid.trim();
 
                 setFormData({
                     fullName: "",
@@ -268,7 +275,24 @@ export default function CreateNewUser() {
                 removeSelectedImage();
 
                 if (isRedirectedFromList) {
-                    navigate(`/deshbord/user-lists?dept_id=${encodeURIComponent(deptIdFromUrl)}`);
+                    try {
+                        await fetch(
+                            `${API_URL}/admit-request/delete-by-suid/${encodeURIComponent(createdSuid)}`,
+                            { method: "DELETE" }
+                        );
+                    } catch (purgeError) {
+                        console.error("Admit request purge error:", purgeError);
+                    }
+
+                    const deptNum = Number(deptIdFromUrl);
+
+                    if (deptNum === 1) {
+                        navigate("/deshbord/g-music/user-lists?dept_id=1");
+                    } else if (deptNum === 2) {
+                        navigate("/deshbord/gurukul-art/user-lists?dept_id=2");
+                    } else {
+                        navigate("/deshbord/user-list");
+                    }
                 }
             } else {
                 toast.error(data.message || "Failed to create user");

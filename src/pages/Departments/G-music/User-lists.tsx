@@ -21,6 +21,7 @@ interface OnboardedUserType {
   id: string | number;
   name: string;
   username: string;
+  suid: string;
   profileImage: string | null;
   department_id: string | number;
   joined_date: string;
@@ -88,6 +89,7 @@ export default function StudentListGMusic() {
             id: user.id,
             name: user.name || user.full_name,
             username: user.username,
+            suid: user.suid || "",
             profileImage: getImageUrl(user),
             department_id: user.department_id,
             joined_date: user.joined_date,
@@ -98,10 +100,10 @@ export default function StudentListGMusic() {
       }
 
       const cleanRequests = formattedRequests.filter((req) => {
+        if (req.isCreated) return false;
+
         const alreadyOnboarded = liveUsers.some(
-          (user) =>
-            String(user.username).trim() === String(req.suid).trim() ||
-            String(user.id).trim() === String(req.suid).trim()
+          (user) => String(user.suid || "").trim() === String(req.suid).trim()
         );
 
         return !alreadyOnboarded;
@@ -359,7 +361,7 @@ function CreatedStudentsPanel({
                   {student.name}
                 </h4>
                 <p className="text-[10px] font-bold text-gray-400">
-                  User: {student.username} | Joined:{" "}
+                  User: {student.username} | SUID: {student.suid} | Joined:{" "}
                   {student.joined_date
                     ? new Date(student.joined_date).toLocaleDateString("en-GB")
                     : ""}

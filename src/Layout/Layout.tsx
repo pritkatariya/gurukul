@@ -11,7 +11,7 @@ import NavbarMusicPlayer from "../Components/commen/NavbarMusicPlayer";
 export default function Layout() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { isMusicPlaying, volume, setVolume } = useMusic();
+  const { volume, setVolume } = useMusic();
 
   useEffect(() => {
     const findAndExposeAudio = () => {
