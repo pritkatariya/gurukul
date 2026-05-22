@@ -13,6 +13,8 @@ import StudentListGMusic from "../pages/Departments/G-music/User-lists";
 import AdmitRequestGurukulArt from "../pages/Departments/Gurukul-Art/Admit-Request";
 import StudentListGurukulArt from "../pages/Departments/Gurukul-Art/User-lists";
 import MusicController from "../pages/Admin/Overview-controller/MusicController";
+import AmrutNuAachaman from "../pages/Admin/Daily-Quotes/Amrut-nu-aachaman";
+import DailyDarshan from "../pages/Admin/Daily-Quotes/Daily-Darshan";
 
 export default function Router() {
     return (
@@ -21,16 +23,18 @@ export default function Router() {
             <Route path="/login" element={<Login />} />
             <Route path="/deshbord" element={<Layout />}>
                 <Route index element={<Deshbord/>}/>
-                <Route path="/deshbord/overview-controller" element={<OverviewController />} />
-                <Route path="/deshbord/overview-music" element={<MusicController />} />
-                <Route path="/deshbord/new-user-create" element={<CreateNewUser/>}/>
-                <Route path="/deshbord/user-list" element={<UserList/>} />
-                <Route path="/deshbord/new-roll-create" element={<CreateRoll/>}/>
-                <Route path="/deshbord/roll-list" element={<RollList/>}/>
-                <Route path="/deshbord/g-music/admit-request" element={<AdmitRequestGMusic/>}/>
-                <Route path="/deshbord/g-music/user-lists" element={<StudentListGMusic/>}/>
-                <Route path="/deshbord/gurukul-art/admit-request" element={<AdmitRequestGurukulArt/>}/>
-                <Route path="/deshbord/gurukul-art/user-lists" element={<StudentListGurukulArt/>}/>
+                <Route path="overview-controller" element={<OverviewController />} />
+                <Route path="overview-music" element={<MusicController />} />                
+                <Route path="amrut-nu-aachaman" element={<AmrutNuAachaman />} />
+                <Route path="daily-darshan" element={<DailyDarshan />} />
+                <Route path="new-user-create" element={<CreateNewUser/>}/>
+                <Route path="user-list" element={<UserList/>} />
+                <Route path="new-roll-create" element={<CreateRoll/>}/>
+                <Route path="roll-list" element={<RollList/>}/>
+                <Route path="g-music/admit-request" element={<AdmitRequestGMusic/>}/>
+                <Route path="g-music/user-lists" element={<StudentListGMusic/>}/>
+                <Route path="gurukul-art/admit-request" element={<AdmitRequestGurukulArt/>}/>
+                <Route path="gurukul-art/user-lists" element={<StudentListGurukulArt/>}/>
             </Route>
         </Routes>
     )

@@ -446,7 +446,7 @@ export default function Overview() {
                             </h2>
 
                             <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-red-700 md:text-xl md:leading-8">
-                                Sanskar, bhakti ane shikshan no divya anubhav.
+                              VIDYA, SADVIDYA, ANE BRAHMVIDYA NO ANOKHO SANGAM.
                             </p>
                         </motion.div>
 
