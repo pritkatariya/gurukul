@@ -1,4 +1,4 @@
-import { useState, useEffect, type SetStateAction } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
     FaUsers,

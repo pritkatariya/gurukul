@@ -10,6 +10,8 @@ import {
     FaSlidersH,
     FaMusic,
     FaCalendarPlus,
+    FaWater,
+    FaEye,
 } from "react-icons/fa";
 import { FaClipboardUser } from "react-icons/fa6";
 import Dropdown from "./DropDown";
@@ -289,6 +291,26 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
                                 >
                                     <FaMusic className="shrink-0 text-base text-red-800/70" />
                                     <span>Music Tracks</span>
+                                </Link>
+                            )}
+
+                            {(userPerms.overview.manage || isMainSuperAdmin) && (
+                                <Link
+                                    to="/deshbord/amrut-nu-aachaman"
+                                    className="flex w-full items-center gap-2 rounded-xl p-2.5 text-left text-xs font-black uppercase tracking-wider text-red-900 transition-colors hover:bg-red-800/10"
+                                >
+                                    <FaWater className="shrink-0 text-base text-red-800/70" />
+                                    <span>Amrut Nu Aachaman</span>
+                                </Link>
+                            )}
+
+                            {(userPerms.overview.manage || isMainSuperAdmin) && (
+                                <Link
+                                    to="/deshbord/daily-darshan"
+                                    className="flex w-full items-center gap-2 rounded-xl p-2.5 text-left text-xs font-black uppercase tracking-wider text-red-900 transition-colors hover:bg-red-800/10"
+                                >
+                                    <FaEye className="shrink-0 text-base text-red-800/70" />
+                                    <span>Daily Darshan</span>
                                 </Link>
                             )}
 
