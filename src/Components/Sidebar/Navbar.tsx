@@ -295,26 +295,6 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
                                 </Link>
                             )}
 
-                            {(userPerms.overview.manage || isMainSuperAdmin) && (
-                                <Link
-                                    to="/deshbord/amrut-nu-aachaman"
-                                    className="flex w-full items-center gap-2 rounded-xl p-2.5 text-left text-xs font-black uppercase tracking-wider text-red-900 transition-colors hover:bg-red-800/10"
-                                >
-                                    <FaWater className="shrink-0 text-base text-red-800/70" />
-                                    <span>Amrut Nu Aachaman</span>
-                                </Link>
-                            )}
-
-                            {(userPerms.overview.manage || isMainSuperAdmin) && (
-                                <Link
-                                    to="/deshbord/daily-darshan"
-                                    className="flex w-full items-center gap-2 rounded-xl p-2.5 text-left text-xs font-black uppercase tracking-wider text-red-900 transition-colors hover:bg-red-800/10"
-                                >
-                                    <FaEye className="shrink-0 text-base text-red-800/70" />
-                                    <span>Daily Darshan</span>
-                                </Link>
-                            )}
-
                             {(userPerms.overview.editor || isMainSuperAdmin) && (
                                 <Link
                                     to="/deshbord/event-editor"
@@ -327,24 +307,24 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
                         </Dropdown>
                     )}
                 </div>{isMainSuperAdmin && (
-    <Dropdown
-        icon={<FaQuoteLeft />}
-        arrowicon={<IoMdArrowDroprightCircle />}
-        text={!isCollapsed ? "Daily Quotes" : ""}
-        isOpen={openId === "admin-4"}
-        onToggle={() => handleToggle("admin-4")}
-        isCollapsed={isCollapsed}
-    >
-        <Link to="/deshbord/amrut-nu-aachaman" className="flex items-center gap-2 w-full text-left p-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-red-900 hover:bg-red-800/10 transition-colors">
-            <FaWater className="text-red-800/70 text-base shrink-0" />
-            <span>Amrut nu Aachaman</span>
-        </Link>
-        <Link to="/deshbord/daily-darshan" className="flex items-center gap-2 w-full text-left p-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-red-900 hover:bg-red-800/10 transition-colors">
-            <FaEye className="text-red-800/70 text-base shrink-0" />
-            <span>Daily Darshan</span>
-        </Link>
-    </Dropdown>
-)}
+                    <Dropdown
+                        icon={<FaQuoteLeft />}
+                        arrowicon={<IoMdArrowDroprightCircle />}
+                        text={!isCollapsed ? "Daily Quotes" : ""}
+                        isOpen={openId === "admin-4"}
+                        onToggle={() => handleToggle("admin-4")}
+                        isCollapsed={isCollapsed}
+                    >
+                        <Link to="/deshbord/amrut-nu-aachaman" className="flex items-center gap-2 w-full text-left p-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-red-900 hover:bg-red-800/10 transition-colors">
+                            <FaWater className="text-red-800/70 text-base shrink-0" />
+                            <span>Amrut nu Aachaman</span>
+                        </Link>
+                        <Link to="/deshbord/daily-darshan" className="flex items-center gap-2 w-full text-left p-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-red-900 hover:bg-red-800/10 transition-colors">
+                            <FaEye className="text-red-800/70 text-base shrink-0" />
+                            <span>Daily Darshan</span>
+                        </Link>
+                    </Dropdown>
+                )}
 
                 <div className="flex w-full flex-col gap-2">
                     <LinkButton To="/deshbord" text="Dashboard" icon={<GoHomeFill />} />
