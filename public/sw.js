@@ -1,12 +1,9 @@
-// public/sw.js
-const CACHE_NAME = 'gurukul-system-v1';
+const CACHE_NAME = 'gurukul-pwa-v1';
 
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing...');
-});
-
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activated');
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => {
+    return cache.addAll(['/', '/index.html']);
+  }));
 });
 
 self.addEventListener('fetch', (event) => {
