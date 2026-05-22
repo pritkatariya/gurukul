@@ -326,7 +326,25 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
                             )}
                         </Dropdown>
                     )}
-                </div>
+                </div>{isMainSuperAdmin && (
+    <Dropdown
+        icon={<FaQuoteLeft />}
+        arrowicon={<IoMdArrowDroprightCircle />}
+        text={!isCollapsed ? "Daily Quotes" : ""}
+        isOpen={openId === "admin-4"}
+        onToggle={() => handleToggle("admin-4")}
+        isCollapsed={isCollapsed}
+    >
+        <Link to="/deshbord/amrut-nu-aachaman" className="flex items-center gap-2 w-full text-left p-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-red-900 hover:bg-red-800/10 transition-colors">
+            <FaWater className="text-red-800/70 text-base shrink-0" />
+            <span>Amrut nu Aachaman</span>
+        </Link>
+        <Link to="/deshbord/daily-darshan" className="flex items-center gap-2 w-full text-left p-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-red-900 hover:bg-red-800/10 transition-colors">
+            <FaEye className="text-red-800/70 text-base shrink-0" />
+            <span>Daily Darshan</span>
+        </Link>
+    </Dropdown>
+)}
 
                 <div className="flex w-full flex-col gap-2">
                     <LinkButton To="/deshbord" text="Dashboard" icon={<GoHomeFill />} />
