@@ -13,7 +13,8 @@ import StudentListGMusic from "../pages/Departments/G-music/User-lists";
 import AdmitRequestGurukulArt from "../pages/Departments/Gurukul-Art/Admit-Request";
 import StudentListGurukulArt from "../pages/Departments/Gurukul-Art/User-lists";
 import MusicController from "../pages/Admin/Overview-controller/MusicController";
-import AmrutNuAachaman from "../pages/Admin/Daily-Quotes/Amrut-nu-aachaman";
+import EventEditor from "../pages/Admin/Event-editor/EventEditor";
+import AmruthuAachaman from "../pages/Admin/Daily-Quotes/Amrut-nu-aachaman";
 import DailyDarshan from "../pages/Admin/Daily-Quotes/Daily-Darshan";
 
 export default function Router() {
@@ -22,20 +23,21 @@ export default function Router() {
             <Route path="/" element={<Overview />} />
             <Route path="/login" element={<Login />} />
             <Route path="/deshbord" element={<Layout />}>
-                <Route index element={<Deshbord/>}/>
+                <Route index element={<Deshbord />} />
                 <Route path="overview-controller" element={<OverviewController />} />
-                <Route path="overview-music" element={<MusicController />} />                
-                <Route path="amrut-nu-aachaman" element={<AmrutNuAachaman />} />
+                <Route path="overview-music" element={<MusicController />} />
+                <Route path="event-editor" element={<EventEditor />} />
+                <Route path="amrut-nu-aachaman" element={<AmruthuAachaman />} />
                 <Route path="daily-darshan" element={<DailyDarshan />} />
-                <Route path="new-user-create" element={<CreateNewUser/>}/>
-                <Route path="user-list" element={<UserList/>} />
-                <Route path="new-roll-create" element={<CreateRoll/>}/>
-                <Route path="roll-list" element={<RollList/>}/>
-                <Route path="g-music/admit-request" element={<AdmitRequestGMusic/>}/>
-                <Route path="g-music/user-lists" element={<StudentListGMusic/>}/>
-                <Route path="gurukul-art/admit-request" element={<AdmitRequestGurukulArt/>}/>
-                <Route path="gurukul-art/user-lists" element={<StudentListGurukulArt/>}/>
+                <Route path="new-user-create" element={<CreateNewUser />} />
+                <Route path="user-list" element={<UserList />} />
+                <Route path="new-roll-create" element={<CreateRoll />} />
+                <Route path="roll-list" element={<RollList />} />
+                <Route path="g-music/admit-request" element={<AdmitRequestGMusic />} />
+                <Route path="g-music/user-lists" element={<StudentListGMusic />} />
+                <Route path="gurukul-art/admit-request" element={<AdmitRequestGurukulArt />} />
+                <Route path="gurukul-art/user-lists" element={<StudentListGurukulArt />} />
             </Route>
         </Routes>
-    )
+    );
 }

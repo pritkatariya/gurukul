@@ -10,7 +10,11 @@ interface PasswordResetCardProps {
   setNewPassword: (val: string) => void;
   setPasswordInputId: (id: number | null) => void;
   handleManualDelete: (id: number) => Promise<void>;
-  handleStatusUpdate: (id: number, type: 'head' | 'admin', action: 'approve' | 'decline') => Promise<void>;
+  handleStatusUpdate: (
+    id: number,
+    type: "head" | "admin",
+    action: "approve" | "decline"
+  ) => Promise<void>;
   handleFinalPasswordReset: (id: number) => Promise<void>;
 }
 
@@ -27,64 +31,151 @@ export default function PasswordResetCard({
   handleStatusUpdate,
   handleFinalPasswordReset
 }: PasswordResetCardProps) {
+  const subject = item.subject || item.title || "Request For Password Reset";
+  const username = item.username || item.name || "User";
+  const suid = item.suid || item.user_id || "";
+  const department = item.department_name || item.deptName || "Department";
+  const isProcessing = processingId === item.id;
+
+  const headApproved = item.head_approved === true;
+  const adminApproved = item.admin_approved === true;
+
   return (
-    <div className="bg-white border border-gray-100 rounded-3xl p-4 shadow-sm flex flex-col gap-3 relative">
-      <button onClick={() => handleManualDelete(item.id)} className="absolute top-4 right-4 text-gray-400 hover:text-red-600 transition-colors cursor-pointer">
+    <div className="relative flex flex-col gap-3 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
+      <button
+        type="button"
+        onClick={() => handleManualDelete(item.id)}
+        className="absolute right-4 top-4 z-10 text-gray-400 transition-colors hover:text-red-600"
+      >
         <FaTimes size={14} />
       </button>
-      <div className="flex justify-between items-center pr-6">
-        <span className="bg-red-50 text-red-800 text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border border-red-100">
-          {item.subject || "🔐 REQUEST FOR PASSWORD RESET"}
+
+      <div className="flex items-center justify-between gap-3 pr-7">
+        <span className="min-w-0 truncate rounded-full border border-red-100 bg-red-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-red-800">
+          {subject}
         </span>
-        <span className="inline-flex items-center gap-1 text-[10px] font-black text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100">
+
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-100 bg-amber-50 px-2.5 py-1 text-[10px] font-black text-amber-700">
           <FaClock size={9} /> Live
         </span>
       </div>
+
       <div className="text-left">
-        <h4 className="text-sm font-black text-gray-800 uppercase">{item.username || item.title}</h4>
-        {(item.suid || item.user_id) && <p className="text-[10px] text-gray-400 font-bold mt-0.5">SUID: {item.suid || item.user_id}</p>}
-        {item.message && <p className="text-[11px] text-gray-500 bg-gray-50 p-2.5 rounded-xl mt-2">"{item.message}"</p>}
+        <h4 className="pr-8 text-sm font-black uppercase text-gray-800">
+          {username}
+        </h4>
+
+        <p className="mt-0.5 text-[10px] font-bold text-gray-400">
+          {suid ? `SUID: ${suid}` : "SUID: -"} | Dept: {department}
+        </p>
+
+        {item.message && (
+          <p className="mt-2 rounded-xl bg-gray-50 p-2.5 text-[11px] leading-relaxed text-gray-500">
+            {item.message}
+          </p>
+        )}
       </div>
 
-      <div className="pt-2 border-t border-gray-50 flex flex-col gap-2">
-        {isDeptHead && item.head_approved === true && item.admin_approved === true ? (
-          <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-2xl flex flex-col gap-2">
-            <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wide block">🎉 એડમિન મંજૂરી મળી ગઈ! સેવકનો નવો પાસવર્ડ સેટ કરો:</span>
+      <div className="flex flex-col gap-2 border-t border-gray-50 pt-2">
+        {isDeptHead && headApproved && adminApproved ? (
+          <div className="flex flex-col gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 p-3">
+            <span className="block text-[10px] font-black uppercase tracking-wide text-emerald-800">
+              Admin permission received. Set new password.
+            </span>
+
             {passwordInputId === item.id ? (
               <div className="flex flex-col gap-2">
-                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Enter Secure New Password" className="w-full bg-white border border-gray-200 px-3 py-2 rounded-xl text-xs font-semibold focus:outline-red-800" />
-                <button type="button" disabled={processingId === item.id} onClick={() => handleFinalPasswordReset(item.id)} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black py-2 rounded-xl uppercase tracking-wider transition-all">
-                  SAVE & UPDATE IN USERS
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                  placeholder="Enter new password"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                />
+
+                <button
+                  type="button"
+                  disabled={isProcessing}
+                  onClick={() => handleFinalPasswordReset(item.id)}
+                  className="w-full rounded-xl bg-emerald-600 py-2 text-[10px] font-black uppercase tracking-wider text-white transition-all hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {isProcessing ? "UPDATING..." : "SAVE PASSWORD"}
                 </button>
               </div>
             ) : (
-              <button type="button" onClick={() => setPasswordInputId(item.id)} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black py-2 rounded-xl uppercase tracking-wider transition-all flex items-center justify-center gap-1 cursor-pointer">
-                <FaKey size={10}/> CHANGE PASSWORD NOW
+              <button
+                type="button"
+                onClick={() => setPasswordInputId(item.id)}
+                className="flex w-full items-center justify-center gap-1 rounded-xl bg-emerald-600 py-2 text-[10px] font-black uppercase tracking-wider text-white transition-all hover:bg-emerald-700"
+              >
+                <FaKey size={10} /> CHANGE PASSWORD NOW
               </button>
             )}
           </div>
         ) : (
           <>
-            {isDeptHead && item.head_approved === null && (
+            {isDeptHead && !headApproved && (
               <div className="grid grid-cols-2 gap-2">
-                <button type="button" disabled={processingId === item.id} onClick={() => handleStatusUpdate(item.id, 'head', 'approve')} className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1"><FaCheck size={10}/> APPROVE HEAD</button>
-                <button type="button" disabled={processingId === item.id} onClick={() => handleStatusUpdate(item.id, 'head', 'decline')} className="bg-red-50 hover:bg-red-100 text-red-700 text-[10px] font-black py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1"><FaBan size={10}/> DECLINE</button>
+                <button
+                  type="button"
+                  disabled={isProcessing}
+                  onClick={() => handleStatusUpdate(item.id, "head", "approve")}
+                  className="flex items-center justify-center gap-1 rounded-xl bg-emerald-600 py-2.5 text-[10px] font-black text-white transition-all hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  <FaCheck size={10} />
+                  {isProcessing ? "WAIT..." : "APPROVE HEAD"}
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isProcessing}
+                  onClick={() => handleStatusUpdate(item.id, "head", "decline")}
+                  className="flex items-center justify-center gap-1 rounded-xl bg-red-50 py-2.5 text-[10px] font-black text-red-700 transition-all hover:bg-red-100 disabled:opacity-50"
+                >
+                  <FaBan size={10} /> DECLINE
+                </button>
               </div>
             )}
 
-            {hasControlAccess && item.head_approved === true && item.admin_approved === null && (
+            {hasControlAccess && headApproved && !adminApproved && (
               <div className="grid grid-cols-2 gap-2">
-                <button type="button" disabled={processingId === item.id} onClick={() => handleStatusUpdate(item.id, 'admin', 'approve')} className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1"><FaCheck size={10}/> GRANT ADMIN PERMISSION</button>
-                <button type="button" disabled={processingId === item.id} onClick={() => handleStatusUpdate(item.id, 'admin', 'decline')} className="bg-red-50 hover:bg-red-100 text-red-700 text-[10px] font-black py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1"><FaBan size={10}/> DECLINE REQUEST</button>
+                <button
+                  type="button"
+                  disabled={isProcessing}
+                  onClick={() => handleStatusUpdate(item.id, "admin", "approve")}
+                  className="flex items-center justify-center gap-1 rounded-xl bg-blue-600 py-2.5 text-[10px] font-black text-white transition-all hover:bg-blue-700 disabled:opacity-50"
+                >
+                  <FaCheck size={10} />
+                  {isProcessing ? "WAIT..." : "GRANT ADMIN"}
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isProcessing}
+                  onClick={() => handleStatusUpdate(item.id, "admin", "decline")}
+                  className="flex items-center justify-center gap-1 rounded-xl bg-red-50 py-2.5 text-[10px] font-black text-red-700 transition-all hover:bg-red-100 disabled:opacity-50"
+                >
+                  <FaBan size={10} /> DECLINE
+                </button>
               </div>
             )}
 
-            {isDeptHead && item.head_approved === true && item.admin_approved === null && (
-              <div className="w-full text-center text-[10px] font-black bg-gray-50 text-gray-400 border border-gray-100 py-2.5 rounded-2xl tracking-widest uppercase">FORWARDED TO PRINCIPAL</div>
+            {isDeptHead && headApproved && !adminApproved && (
+              <div className="w-full rounded-2xl border border-gray-100 bg-gray-50 py-2.5 text-center text-[10px] font-black uppercase tracking-widest text-gray-400">
+                Forwarded to Super Admin
+              </div>
+            )}
+
+            {hasControlAccess && !headApproved && (
+              <div className="w-full rounded-2xl border border-amber-100 bg-amber-50 py-2.5 text-center text-[10px] font-black uppercase tracking-widest text-amber-800">
+                Waiting for Head Approval
+              </div>
             )}
 
             {!hasControlAccess && !isDeptHead && (
-              <div className="w-full text-center text-[10px] font-black bg-amber-50 text-amber-800 border border-amber-100 py-2.5 rounded-2xl tracking-widest uppercase">⏳ Waiting for Verification ({item.head_approved ? "Admin Pending" : "Head Pending"})</div>
+              <div className="w-full rounded-2xl border border-amber-100 bg-amber-50 py-2.5 text-center text-[10px] font-black uppercase tracking-widest text-amber-800">
+                Waiting For Verification ({headApproved ? "Admin Pending" : "Head Pending"})
+              </div>
             )}
           </>
         )}

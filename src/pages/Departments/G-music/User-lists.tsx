@@ -8,12 +8,12 @@ interface SeekerRequestType {
   id: string | number;
   img: string | null;
   name: string;
-  role: string;      
-  dept: string | number;      
-  date: string;      
-  status: string;    
-  suid: string;      
-  performance: string; 
+  role: string;
+  dept: string | number;
+  date: string;
+  status: string;
+  suid: string;
+  performance: string;
   isCreated: boolean;
 }
 
@@ -21,15 +21,19 @@ interface OnboardedUserType {
   id: string | number;
   name: string;
   username: string;
-  image_url: string | null;
+  suid: string;
+  profileImage: string | null;
   department_id: string | number;
   joined_date: string;
 }
 
+const getImageUrl = (item: any) =>
+  item?.profile_image_url || item?.image_url || item?.img || null;
+
 export default function StudentListGMusic() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
+
   const currentDeptId = Number(searchParams.get("dept_id")) || 1;
 
   const [requests, setRequests] = useState<SeekerRequestType[]>([]);
@@ -46,26 +50,30 @@ export default function StudentListGMusic() {
   const fetchDepartmentData = async () => {
     try {
       setLoading(true);
-      let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
+
+      let API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      if (API_URL.endsWith("/")) API_URL = API_URL.slice(0, -1);
 
       const resReq = await fetch(`${API_URL}/${apiRoutePrefix}/admit-list`);
       let formattedRequests: SeekerRequestType[] = [];
 
       if (resReq.ok) {
         const data = await resReq.json();
+
         if (data.success && data.requests) {
           formattedRequests = data.requests.map((req: any) => ({
             id: req.id,
-            img: req.image_url || null,
+            img: getImageUrl(req),
             name: req.name,
-            role: `${req.performance.toUpperCase()} Perf.`,
+            role: `${String(req.performance || "").toUpperCase()} Perf.`,
             dept: req.department_id,
-            date: req.created_at ? new Date(req.created_at).toLocaleDateString('en-GB') : "18/05/2026",
-            status: req.status, 
+            date: req.created_at
+              ? new Date(req.created_at).toLocaleDateString("en-GB")
+              : "18/05/2026",
+            status: req.status,
             suid: req.suid,
             performance: req.performance,
-            isCreated: req.is_user_created || false
+            isCreated: req.is_user_created || false,
           }));
         }
       }
@@ -75,21 +83,33 @@ export default function StudentListGMusic() {
 
       if (resUsers.ok) {
         const dataUsers = await resUsers.json();
+
         if (dataUsers.success && dataUsers.users) {
-          liveUsers = dataUsers.users;
-          setOnboardedStudents(dataUsers.users);
+          liveUsers = dataUsers.users.map((user: any) => ({
+            id: user.id,
+            name: user.name || user.full_name,
+            username: user.username,
+            suid: user.suid || "",
+            profileImage: getImageUrl(user),
+            department_id: user.department_id,
+            joined_date: user.joined_date,
+          }));
+
+          setOnboardedStudents(liveUsers);
         }
       }
 
       const cleanRequests = formattedRequests.filter((req) => {
+        if (req.isCreated) return false;
+
         const alreadyOnboarded = liveUsers.some(
-          (user) => String(user.username).trim() === String(req.suid).trim()
+          (user) => String(user.suid || "").trim() === String(req.suid).trim()
         );
+
         return !alreadyOnboarded;
       });
 
       setRequests(cleanRequests);
-
     } catch (error) {
       console.error(error);
       toast.error(`${departmentName} નો ડેટા લોડ કરવામાં કોઈ સમસ્યા આવી.`);
@@ -107,53 +127,47 @@ export default function StudentListGMusic() {
   );
 
   return (
-    <div className="w-full min-h-screen bg-gray-50/30 p-2 sm:p-6 lg:p-10 select-none flex flex-col gap-6">
-
-      <div className="w-full bg-white p-4 sm:p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="flex min-h-screen w-full select-none flex-col gap-6 bg-gray-50/30 p-2 sm:p-6 lg:p-10">
+      <div className="flex w-full flex-col items-start justify-between gap-4 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:p-6">
         <div>
-          <h1 className="text-xl sm:text-3xl font-black text-red-950 uppercase tracking-tight flex items-center gap-2 sm:gap-3">
-            <span className="p-2 bg-red-50 text-red-800 rounded-xl sm:rounded-2xl shadow-inner"><FaUsers size={20} /></span>
+          <h1 className="flex items-center gap-2 text-xl font-black uppercase tracking-tight text-red-950 sm:gap-3 sm:text-3xl">
+            <span className="rounded-xl bg-red-50 p-2 text-red-800 shadow-inner sm:rounded-2xl">
+              <FaUsers size={20} />
+            </span>
             {departmentName} Admission Control Panel
           </h1>
-          <p className="text-gray-400 text-xs sm:text-sm font-semibold mt-1">
+          <p className="mt-1 text-xs font-semibold text-gray-400 sm:text-sm">
             Realtime database request configurations and onboarding dashboard for {departmentName}.
           </p>
         </div>
       </div>
 
-      <div className="flex flex-row items-center gap-2 bg-gray-100/80 p-1.5 rounded-2xl w-full sm:w-fit border border-gray-200/50 overflow-x-auto">
-        <button
+      <div className="flex w-full flex-row items-center gap-2 overflow-x-auto rounded-2xl border border-gray-200/50 bg-gray-100/80 p-1.5 sm:w-fit">
+        <TabButton
+          active={activeTab === "Approved"}
           onClick={() => setActiveTab("Approved")}
-          className={`flex-1 sm:flex-none text-center justify-center px-4 sm:px-6 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === "Approved" ? "bg-white text-emerald-800 shadow-sm border border-emerald-100" : "text-gray-500"
-          }`}
-        >
-          <FaCheckCircle size={12} /> Approved ({requests.filter(r => r.status.toLowerCase() === "approved").length})
-        </button>
-        <button
+          color="emerald"
+          icon={<FaCheckCircle size={12} />}
+          label={`Approved (${requests.filter((r) => r.status.toLowerCase() === "approved").length})`}
+        />
+
+        <TabButton
+          active={activeTab === "Pending"}
           onClick={() => setActiveTab("Pending")}
-          className={`flex-1 sm:flex-none text-center justify-center px-4 sm:px-6 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === "Pending" ? "bg-white text-amber-800 shadow-sm border border-amber-100" : "text-gray-500"
-          }`}
-        >
-          <FaClock size={12} /> Pending ({requests.filter(r => r.status.toLowerCase() === "pending").length})
-        </button>
+          color="amber"
+          icon={<FaClock size={12} />}
+          label={`Pending (${requests.filter((r) => r.status.toLowerCase() === "pending").length})`}
+        />
       </div>
 
-      <div className="w-full bg-white rounded-3xl shadow-sm border border-gray-100 p-3 sm:p-5 flex flex-col">
+      <div className="flex w-full flex-col rounded-3xl border border-gray-100 bg-white p-3 shadow-sm sm:p-5">
         {loading ? (
-          <div className="flex flex-col items-center gap-3 text-gray-400 font-bold py-24 justify-center">
-            <div className="w-8 h-8 border-4 border-red-800 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-[11px] uppercase tracking-wider text-red-950/50">Fetching {departmentName} Records...</span>
-          </div>
+          <LoadingState label={`Fetching ${departmentName} Records...`} />
         ) : filteredRequests.length === 0 ? (
-          <div className="text-gray-400 font-bold py-24 text-center uppercase text-xs tracking-wider">
-            No dynamic {activeTab.toLowerCase()} entries found for {departmentName}.
-          </div>
+          <EmptyState label={`No dynamic ${activeTab.toLowerCase()} entries found for ${departmentName}.`} />
         ) : (
           <div className="w-full">
-            
-            <div className="hidden lg:block overflow-visible rounded-2xl border border-gray-100 bg-white mb-6">
+            <div className="mb-6 hidden overflow-visible rounded-2xl border border-gray-100 bg-white lg:block">
               <DataExplorer
                 headers={headers}
                 data={filteredRequests}
@@ -163,91 +177,210 @@ export default function StudentListGMusic() {
               />
             </div>
 
-            <div className="p-2 sm:p-4 bg-red-50/10 border border-red-100/50 rounded-2xl mb-6">
-              <h3 className="text-xs font-black text-red-950 uppercase tracking-wider mb-4 pl-1">
-                Live Onboarding Logs Panel ({activeTab})
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredRequests.map((req) => (
-                  <div key={req.id} className="bg-white border border-gray-100 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    
-                    <div className="flex items-center gap-3">
-                      {req.img ? (
-                        <img src={req.img} alt="profile" className="w-10 h-10 rounded-full object-cover border border-gray-200" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-red-800 text-white flex items-center justify-center font-black text-xs">
-                          {req.name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <div>
-                        <h4 className="text-xs font-black text-gray-800 uppercase">{req.name}</h4>
-                        <p className="text-[10px] text-gray-400 font-bold mt-0.5">SUID: {req.suid} | {req.role}</p>
-                      </div>
-                    </div>
+            <RequestsPanel
+              activeTab={activeTab}
+              requests={filteredRequests}
+              currentDeptId={currentDeptId}
+              navigate={navigate}
+            />
+          </div>
+        )}
+      </div>
 
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-2 sm:pt-0">
-                      {req.status.toLowerCase() === "approved" ? (
-                        <>
-                          <span className="hidden sm:inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full text-[9px] font-black uppercase border border-emerald-100">
-                            Approved
-                          </span>
-                          <button
-                            onClick={() => navigate(`/deshbord/new-user-create?dept_id=${currentDeptId}&name=${encodeURIComponent(req.name)}&suid=${encodeURIComponent(req.suid)}`)}
-                            className="w-full sm:w-auto inline-flex items-center justify-center gap-1 bg-red-800 hover:bg-red-900 text-white text-[10px] font-black px-3 py-2 rounded-lg transition-all shadow-sm cursor-pointer"
-                          >
-                            <FaUserPlus size={11} /> CREATE STUDENT
-                          </button>
-                        </>
-                      ) : (
-                        <span className="w-full sm:w-auto text-center inline-flex items-center justify-center gap-1 bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-black px-4 py-2 rounded-lg">
-                          ⏳ PENDING REVIEW
-                        </span>
-                      )}
-                    </div>
+      <CreatedStudentsPanel
+        departmentName={departmentName}
+        students={onboardedStudents}
+      />
+    </div>
+  );
+}
 
-                  </div>
-                ))}
+function TabButton({
+  active,
+  onClick,
+  icon,
+  label,
+  color,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  color: "emerald" | "amber";
+}) {
+  const activeClass =
+    color === "emerald"
+      ? "bg-white text-emerald-800 shadow-sm border border-emerald-100"
+      : "bg-white text-amber-800 shadow-sm border border-amber-100";
+
+  return (
+    <button
+      onClick={onClick}
+      className={`flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-center text-[11px] font-black uppercase tracking-wider transition-all sm:flex-none sm:px-6 sm:text-xs ${
+        active ? activeClass : "text-gray-500"
+      }`}
+    >
+      {icon} {label}
+    </button>
+  );
+}
+
+function LoadingState({ label }: { label: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 py-24 font-bold text-gray-400">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-red-800 border-t-transparent" />
+      <span className="text-[11px] uppercase tracking-wider text-red-950/50">{label}</span>
+    </div>
+  );
+}
+
+function EmptyState({ label }: { label: string }) {
+  return (
+    <div className="py-24 text-center text-xs font-bold uppercase tracking-wider text-gray-400">
+      {label}
+    </div>
+  );
+}
+
+function RequestsPanel({
+  activeTab,
+  requests,
+  currentDeptId,
+  navigate,
+}: {
+  activeTab: string;
+  requests: SeekerRequestType[];
+  currentDeptId: number;
+  navigate: ReturnType<typeof useNavigate>;
+}) {
+  return (
+    <div className="mb-6 rounded-2xl border border-red-100/50 bg-red-50/10 p-2 sm:p-4">
+      <h3 className="mb-4 pl-1 text-xs font-black uppercase tracking-wider text-red-950">
+        Live Onboarding Logs Panel ({activeTab})
+      </h3>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {requests.map((req) => (
+          <div
+            key={req.id}
+            className="flex flex-col items-start justify-between gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:flex-row sm:items-center"
+          >
+            <div className="flex items-center gap-3">
+              {req.img ? (
+                <img
+                  src={req.img}
+                  alt={req.name}
+                  className="h-10 w-10 rounded-full border border-gray-200 object-cover"
+                />
+              ) : (
+                <AvatarFallback name={req.name} color="red" />
+              )}
+
+              <div>
+                <h4 className="text-xs font-black uppercase text-gray-800">{req.name}</h4>
+                <p className="mt-0.5 text-[10px] font-bold text-gray-400">
+                  SUID: {req.suid} | {req.role}
+                </p>
               </div>
             </div>
 
+            <div className="flex w-full items-center justify-end gap-2 border-t pt-2 sm:w-auto sm:border-t-0 sm:pt-0">
+              {req.status.toLowerCase() === "approved" ? (
+                <>
+                  <span className="hidden items-center gap-1 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-[9px] font-black uppercase text-emerald-700 sm:inline-flex">
+                    Approved
+                  </span>
+
+                  <button
+                    onClick={() =>
+                      navigate(
+                        `/deshbord/new-user-create?dept_id=${currentDeptId}&name=${encodeURIComponent(
+                          req.name
+                        )}&suid=${encodeURIComponent(req.suid)}`
+                      )
+                    }
+                    className="inline-flex w-full items-center justify-center gap-1 rounded-lg bg-red-800 px-3 py-2 text-[10px] font-black text-white shadow-sm transition-all hover:bg-red-900 sm:w-auto"
+                  >
+                    <FaUserPlus size={11} /> CREATE STUDENT
+                  </button>
+                </>
+              ) : (
+                <span className="inline-flex w-full items-center justify-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-center text-[10px] font-black text-amber-800 sm:w-auto">
+                  PENDING REVIEW
+                </span>
+              )}
+            </div>
           </div>
-        )}
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CreatedStudentsPanel({
+  departmentName,
+  students,
+}: {
+  departmentName: string;
+  students: OnboardedUserType[];
+}) {
+  return (
+    <div className="flex w-full flex-col gap-4 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
+      <div className="flex items-center gap-2">
+        <span className="rounded-xl bg-emerald-50 p-1.5 text-emerald-700">
+          <FaUserCheck size={16} />
+        </span>
+        <h2 className="text-sm font-black uppercase tracking-wider text-gray-800 sm:text-base">
+          {departmentName} Created Students List ({students.length})
+        </h2>
       </div>
 
-      <div className="w-full bg-white rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-6 flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <span className="p-1.5 bg-emerald-50 text-emerald-700 rounded-xl"><FaUserCheck size={16} /></span>
-          <h2 className="text-sm sm:text-base font-black text-gray-800 uppercase tracking-wider">
-            {departmentName} Created Students List ({onboardedStudents.length})
-          </h2>
+      {students.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center text-xs font-bold uppercase tracking-wider text-gray-400">
+          No active onboarding users registered yet in {departmentName}.
         </div>
-        
-        {onboardedStudents.length === 0 ? (
-          <div className="text-center text-gray-400 font-bold py-8 text-xs uppercase tracking-wider border border-dashed border-gray-200 rounded-2xl">
-            No active onboarding users registered yet in {departmentName}.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {onboardedStudents.map((student) => (
-              <div key={student.id} className="flex items-center gap-3 p-3 bg-emerald-50/20 border border-emerald-100/50 rounded-2xl">
-                {student.image_url ? (
-                  <img src={student.image_url} alt="avatar" className="w-10 h-10 rounded-full object-cover border border-emerald-200" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-emerald-700 text-white flex items-center justify-center font-black text-xs">
-                    {student.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div>
-                  <h4 className="text-xs font-black text-gray-800 uppercase tracking-tight">{student.name}</h4>
-                  <p className="text-[10px] text-gray-400 font-bold">User: {student.username} | Joined: {student.joined_date ? new Date(student.joined_date).toLocaleDateString('en-GB') : ""}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {students.map((student) => (
+            <div
+              key={student.id}
+              className="flex items-center gap-3 rounded-2xl border border-emerald-100/50 bg-emerald-50/20 p-3"
+            >
+              {student.profileImage ? (
+                <img
+                  src={student.profileImage}
+                  alt={student.name}
+                  className="h-10 w-10 rounded-full border border-emerald-200 object-cover"
+                />
+              ) : (
+                <AvatarFallback name={student.name} color="emerald" />
+              )}
 
+              <div>
+                <h4 className="text-xs font-black uppercase tracking-tight text-gray-800">
+                  {student.name}
+                </h4>
+                <p className="text-[10px] font-bold text-gray-400">
+                  User: {student.username} | SUID: {student.suid} | Joined:{" "}
+                  {student.joined_date
+                    ? new Date(student.joined_date).toLocaleDateString("en-GB")
+                    : ""}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AvatarFallback({ name, color }: { name: string; color: "red" | "emerald" }) {
+  const bg = color === "emerald" ? "bg-emerald-700" : "bg-red-800";
+
+  return (
+    <div className={`flex h-10 w-10 items-center justify-center rounded-full text-xs font-black text-white ${bg}`}>
+      {(name || "?").charAt(0).toUpperCase()}
     </div>
   );
 }

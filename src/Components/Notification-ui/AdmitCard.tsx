@@ -1,4 +1,4 @@
-import { FaTimes, FaClock } from "react-icons/fa";
+import { FaTimes, FaClock, FaCheck, FaBan } from "react-icons/fa";
 
 interface AdmitCardProps {
   item: any;
@@ -17,38 +17,71 @@ export default function AdmitCard({
   handleApproveAdmit,
   handleDeclineAdmit
 }: AdmitCardProps) {
+  const title = item.name || item.full_name || item.username || item.title || item.subject || "Gurukul Request";
+  const department = item.deptName || item.department_name || item.department || "Gurukul Log";
+  const message = item.description || item.message || "";
+  const suid = item.suid || item.user_id || "";
+  const isPending = String(item.status || "").toLowerCase() === "pending";
+  const isProcessing = processingId === item.id;
+
   return (
-    <div className="bg-white border border-gray-100 rounded-3xl p-4 shadow-sm flex flex-col gap-3 relative">
-      <button onClick={() => handleManualDelete(item.id)} className="absolute top-4 right-4 text-gray-400 hover:text-red-600 transition-colors cursor-pointer">
+    <div className="relative flex flex-col gap-3 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
+      <button
+        type="button"
+        onClick={() => handleManualDelete(item.id)}
+        className="absolute right-4 top-4 z-10 text-gray-400 transition-colors hover:text-red-600"
+      >
         <FaTimes size={14} />
       </button>
-      <div className="flex justify-between items-center pr-6">
-        <span className="bg-red-50 text-red-800 text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border border-red-100">
-          {item.deptName || item.department_name || item.title || "GURUKUL LOG"}
+
+      <div className="flex items-center justify-between gap-3 pr-7">
+        <span className="min-w-0 truncate rounded-full border border-red-100 bg-red-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-red-800">
+          {department}
         </span>
-        <span className="inline-flex items-center gap-1 text-[10px] font-black text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100">
+
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-100 bg-amber-50 px-2.5 py-1 text-[10px] font-black text-amber-700">
           <FaClock size={9} /> Live
         </span>
       </div>
+
       <div className="text-left">
-        <h4 className="text-sm font-black text-gray-800 uppercase">{item.name || item.title}</h4>
-        {(item.suid || item.user_id) && (
-          <p className="text-[10px] text-gray-400 font-bold mt-0.5">
-            SUID: {item.suid || item.user_id} {item.performance && `| ${item.performance?.toUpperCase()} Perf.`}
+        <h4 className="pr-8 text-sm font-black uppercase text-gray-800">
+          {title}
+        </h4>
+
+        {suid && (
+          <p className="mt-0.5 text-[10px] font-bold text-gray-400">
+            SUID: {suid}
+            {item.performance ? ` | ${String(item.performance).toUpperCase()} Perf.` : ""}
           </p>
         )}
-        {(item.description || item.message) && (
-          <p className="text-[11px] text-gray-500 bg-gray-50 p-2.5 rounded-xl mt-2">
-            "{item.description || item.message}"
+
+        {message && (
+          <p className="mt-2 rounded-xl bg-gray-50 p-2.5 text-[11px] leading-relaxed text-gray-500">
+            {message}
           </p>
         )}
       </div>
-      {hasControlAccess && item.status?.toLowerCase() === "pending" && !item.notification_type && (
-        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-50">
-          <button disabled={processingId === item.id} onClick={() => handleApproveAdmit(item.id)} className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black py-2 rounded-xl transition-all">
-            APPROVE USER
+
+      {hasControlAccess && isPending && !item.notification_type && (
+        <div className="grid grid-cols-2 gap-2 border-t border-gray-50 pt-2">
+          <button
+            type="button"
+            disabled={isProcessing}
+            onClick={() => handleApproveAdmit(item.id)}
+            className="flex items-center justify-center gap-1 rounded-xl bg-emerald-600 py-2.5 text-[10px] font-black text-white transition-all hover:bg-emerald-700 disabled:opacity-50"
+          >
+            <FaCheck size={10} />
+            {isProcessing ? "WAIT..." : "APPROVE"}
           </button>
-          <button disabled={processingId === item.id} onClick={() => handleDeclineAdmit(item.id)} className="bg-red-50 hover:bg-red-100 text-red-700 text-[10px] font-black py-2 rounded-xl transition-all">
+
+          <button
+            type="button"
+            disabled={isProcessing}
+            onClick={() => handleDeclineAdmit(item.id)}
+            className="flex items-center justify-center gap-1 rounded-xl bg-red-50 py-2.5 text-[10px] font-black text-red-700 transition-all hover:bg-red-100 disabled:opacity-50"
+          >
+            <FaBan size={10} />
             DECLINE
           </button>
         </div>

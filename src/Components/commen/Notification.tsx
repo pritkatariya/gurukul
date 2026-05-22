@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTimes, FaClock, FaBell, FaBuilding, FaCalendarAlt, FaFileSignature } from "react-icons/fa";
+import {
+  FaTimes,
+  FaClock,
+  FaBell,
+  FaBuilding,
+  FaCalendarAlt,
+  FaFileSignature
+} from "react-icons/fa";
 import { MdNotificationsNone } from "react-icons/md";
 import Application from "../../pages/Application";
 import WelcomeCard from "../Notification-ui/WelcomeCard";
@@ -12,12 +19,13 @@ interface NotificationItem {
   id: number;
   user_id?: number;
   department_id?: number;
-  title: string;
+  title?: string;
+  subject?: string;
   message: string;
-  is_read: boolean;
-  head_approved: boolean | null;
-  admin_approved: boolean | null;
-  notification_type: string;
+  is_read?: boolean;
+  head_approved?: boolean | null;
+  admin_approved?: boolean | null;
+  notification_type?: string;
   created_at?: string;
   name?: string;
   suid?: string;
@@ -25,9 +33,8 @@ interface NotificationItem {
   description?: string;
   department_name?: string;
   deptName?: string;
-  status?: string; 
+  status?: string;
   username?: string;
-  subject?: string;
 }
 
 interface NotificationProps {
@@ -42,6 +49,12 @@ interface NotificationProps {
   onApproveDept: (id: number) => Promise<void>;
   onDeclineDept: (id: number) => Promise<void>;
 }
+
+const getApiUrl = () => {
+  let API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  if (API_URL.endsWith("/")) API_URL = API_URL.slice(0, -1);
+  return API_URL;
+};
 
 export default function Notification({
   isOpen,
@@ -61,57 +74,85 @@ export default function Notification({
 
   const [openApplicationForm, setOpenApplicationForm] = useState(false);
   const [passwordInputId, setPasswordInputId] = useState<number | null>(null);
-  const [newPassword, setNewPassword] = useState<string>("");
+  const [newPassword, setNewPassword] = useState("");
 
   const userRole = localStorage.getItem("user_role") || "USER";
   const userRaw = localStorage.getItem("user");
+
   let userId: number | null = null;
-  let userName: string = ""; 
-  let userDeptId: number = 0;
-  
+  let userName = "";
+  let userDeptId = 0;
+
   if (userRaw) {
-    try { 
+    try {
       const parsed = JSON.parse(userRaw);
-      userId = parsed.id ? Number(parsed.id) : null; 
+      userId = parsed.id ? Number(parsed.id) : null;
       userName = parsed.username || parsed.full_name || "";
-      if (parsed.department_id) userDeptId = Number(parsed.department_id);
-    } catch (e) {}
+      userDeptId = parsed.department_id ? Number(parsed.department_id) : 0;
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  const hasControlAccess = userId === 123098 || String(userRole).trim().toUpperCase() === "SUPER_ADMIN";
-  const isDeptHead = String(userRole).trim().toLowerCase() === "department main" || String(userRole).trim().toLowerCase() === "head1029";
+  const roleCode = String(userRole).trim().toLowerCase();
+  const hasControlAccess =
+    userId === 123098 ||
+    roleCode === "super_admin" ||
+    roleCode === "super-admin" ||
+    roleCode === "superadmin";
+
+  const isDeptHead =
+    roleCode === "department main" ||
+    roleCode === "department_main" ||
+    roleCode === "head1029";
 
   const handleManualDelete = async (id: number) => {
     try {
-      let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
-      
+      const API_URL = getApiUrl();
+
       const response = await fetch(`${API_URL}/student/notification/delete/${id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" }
       });
+
       const data = await response.json();
+
       if (data.success) {
-        setLiveDbNotifications(prev => prev.filter(n => n.id !== id));
+        setLiveDbNotifications((prev) => prev.filter((item) => item.id !== id));
+        if (setNotifications) {
+          setNotifications((prev) => prev.filter((item) => item.id !== id));
+        }
+      } else {
+        toast.error(data.message || "Notification delete failed");
       }
     } catch (error) {
       console.error(error);
+      toast.error("Notification delete failed");
     }
   };
 
   const loadLiveNotifications = async () => {
     try {
-      let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
-      
-      const res = await fetch(`${API_URL}/student/get-filtered-notifications?filterType=${timeFilter}`);
-      const data = await res.json();
-      
+      const API_URL = getApiUrl();
+
+      const params = new URLSearchParams({
+        filterType: timeFilter,
+        userId: String(userId || 0),
+        departmentId: String(userDeptId || 0),
+        role: userRole
+      });
+
+      const response = await fetch(`${API_URL}/student/get-filtered-notifications?${params.toString()}`);
+      const data = await response.json();
+
       if (data.success && Array.isArray(data.notifications)) {
         setLiveDbNotifications(data.notifications);
+      } else {
+        setLiveDbNotifications([]);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
+      setLiveDbNotifications([]);
     }
   };
 
@@ -119,85 +160,102 @@ export default function Notification({
     if (isOpen) {
       loadLiveNotifications();
     }
-  }, [isOpen, userId, userName, hasControlAccess, timeFilter]);
+  }, [isOpen, userId, userDeptId, userRole, timeFilter]);
 
-  const handleStatusUpdate = async (id: number, type: 'head' | 'admin', action: 'approve' | 'decline') => {
+  const handleStatusUpdate = async (
+    id: number,
+    type: "head" | "admin",
+    action: "approve" | "decline"
+  ) => {
     try {
       setProcessingId(id);
-      let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
-      
+      const API_URL = getApiUrl();
+
       const response = await fetch(`${API_URL}/student/notification/status-update/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type, action })
       });
-      
+
       const data = await response.json();
+
       if (data.success) {
         toast.success(data.message);
-        if (action === 'decline') {
-          setLiveDbNotifications(prev => prev.filter(n => n.id !== id));
+
+        if (action === "decline") {
+          setLiveDbNotifications((prev) => prev.filter((item) => item.id !== id));
         } else {
-          setLiveDbNotifications(prev => prev.map(n => 
-            n.id === id ? { ...n, [type === 'head' ? 'head_approved' : 'admin_approved']: true } : n
-          ));
+          setLiveDbNotifications((prev) =>
+            prev.map((item) =>
+              item.id === id
+                ? {
+                    ...item,
+                    [type === "head" ? "head_approved" : "admin_approved"]: true
+                  }
+                : item
+            )
+          );
         }
+
+        await loadLiveNotifications();
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Status update failed");
       }
     } catch (error) {
       console.error(error);
-    } {
+      toast.error("Status update failed");
+    } finally {
       setProcessingId(null);
     }
   };
 
   const handleFinalPasswordReset = async (id: number) => {
     if (!newPassword.trim()) {
-      toast.error("કૃપા કરીને નવો પાસવર્ડ એન્ટર કરો!");
+      toast.error("Please enter new password");
       return;
     }
 
     try {
       setProcessingId(id);
-      let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
-      
+      const API_URL = getApiUrl();
+
       const response = await fetch(`${API_URL}/student/notification/status-update/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: 'password_reset', newPassword })
+        body: JSON.stringify({
+          type: "password_reset",
+          newPassword: newPassword.trim()
+        })
       });
-      
+
       const data = await response.json();
+
       if (data.success) {
         toast.success(data.message);
         setPasswordInputId(null);
         setNewPassword("");
-        setLiveDbNotifications(prev => prev.filter(n => n.id !== id));
+        setLiveDbNotifications((prev) => prev.filter((item) => item.id !== id));
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Password reset failed");
       }
     } catch (error) {
       console.error(error);
+      toast.error("Password reset failed");
     } finally {
       setProcessingId(null);
     }
   };
 
   const getFilteredNotifications = (items: NotificationItem[]) => {
-    const now = new Date().getTime();
+    const now = Date.now();
     const oneHour = 60 * 60 * 1000;
     const oneWeek = 7 * 24 * 60 * 60 * 1000;
 
     return items.filter((item) => {
       const itemTime = item.created_at ? new Date(item.created_at).getTime() : now;
       const timeDiff = now - itemTime;
-      if (timeDiff > oneWeek) {
-        handleManualDelete(item.id);
-        return false;
-      }
+
+      if (timeDiff > oneWeek) return false;
       if (timeFilter === "hour") return timeDiff <= oneHour;
       return timeDiff <= oneWeek;
     });
@@ -205,11 +263,16 @@ export default function Notification({
 
   const handleApproveAdmit = async (targetId: number) => {
     if (processingId !== null) return;
+
     try {
       setProcessingId(targetId);
       await onApprove(targetId);
-      if (setNotifications) setNotifications(prev => prev.filter(item => item.id !== targetId));
+
+      if (setNotifications) {
+        setNotifications((prev) => prev.filter((item) => item.id !== targetId));
+      }
     } catch (error) {
+      console.error(error);
       toast.error("Operation error");
     } finally {
       setProcessingId(null);
@@ -218,11 +281,16 @@ export default function Notification({
 
   const handleDeclineAdmit = async (targetId: number) => {
     if (processingId !== null) return;
+
     try {
       setProcessingId(targetId);
       await onDecline(targetId);
-      if (setNotifications) setNotifications(prev => prev.filter(item => item.id !== targetId));
+
+      if (setNotifications) {
+        setNotifications((prev) => prev.filter((item) => item.id !== targetId));
+      }
     } catch (error) {
+      console.error(error);
       toast.error("Operation error");
     } finally {
       setProcessingId(null);
@@ -231,31 +299,61 @@ export default function Notification({
 
   const handleApproveDeptRequest = async (targetId: number) => {
     if (processingId !== null) return;
-    try { setProcessingId(targetId); await onApproveDept(targetId); } catch (error) { } finally { setProcessingId(null); }
+
+    try {
+      setProcessingId(targetId);
+      await onApproveDept(targetId);
+    } catch (error) {
+      console.error(error);
+      toast.error("Operation error");
+    } finally {
+      setProcessingId(null);
+    }
   };
 
   const handleDeclineDeptRequest = async (targetId: number) => {
     if (processingId !== null) return;
-    try { setProcessingId(targetId); await onDeclineDept(targetId); } catch (error) { } finally { setProcessingId(null); }
+
+    try {
+      setProcessingId(targetId);
+      await onDeclineDept(targetId);
+    } catch (error) {
+      console.error(error);
+      toast.error("Operation error");
+    } finally {
+      setProcessingId(null);
+    }
   };
 
-  const displayNotifications = liveDbNotifications.filter(item => {
-    if (hasControlAccess) return item.head_approved === true || item.notification_type === "Welcome" || item.title?.toLowerCase().includes("welcome");
-    if (isDeptHead) return Number(item.department_id) === Number(userDeptId) || item.department_id === 1 || item.department_id === 2;
-    
-    const lowerMessage = (item.message || "").toLowerCase();
-    const lowerTitle = (item.title || "").toLowerCase();
-    const lowerUserName = (userName || "").toLowerCase();
+  const visibleLiveNotifications = liveDbNotifications.filter((item) => {
+    const itemTitle = String(item.title || item.subject || "").toLowerCase();
+    const itemType = String(item.notification_type || "").toLowerCase();
 
-    return Number(item.user_id) === Number(userId) || 
-           lowerMessage.includes(lowerUserName) || 
-           lowerTitle.includes("welcome") || 
-           item.notification_type === "Welcome";
+    if (hasControlAccess) {
+      return item.head_approved === true || itemType === "welcome" || itemTitle.includes("welcome");
+    }
+
+    if (isDeptHead) {
+      return (
+        Number(item.department_id) === Number(userDeptId) ||
+        Number(item.user_id) === Number(userId) ||
+        itemType === "welcome" ||
+        itemTitle.includes("welcome")
+      );
+    }
+
+    return (
+      Number(item.user_id) === Number(userId) ||
+      itemType === "welcome" ||
+      itemTitle.includes("welcome")
+    );
   });
 
-  const activeAdmitRequests = hasControlAccess 
-    ? getFilteredNotifications(notifications).filter(item => item.status?.toLowerCase() === "pending")
-    : getFilteredNotifications(displayNotifications);
+  const activeAdmitRequests = hasControlAccess
+    ? getFilteredNotifications(notifications).filter(
+        (item) => String(item.status || "").toLowerCase() === "pending"
+      )
+    : getFilteredNotifications(visibleLiveNotifications);
 
   const activeDeptRequests = deptNotifications.filter(
     (item) => item.status && item.status.toLowerCase() === "pending"
@@ -265,68 +363,157 @@ export default function Notification({
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm" />
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+          />
 
           <motion.div
-            initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-screen w-full sm:w-112.5 bg-gray-50 z-50 shadow-2xl flex flex-col border-l border-gray-100"
+            className="fixed right-0 top-0 z-50 flex h-screen w-full flex-col border-l border-gray-100 bg-gray-50 shadow-2xl sm:w-112.5"
           >
-            <div className="bg-red-800 text-amber-100 p-5 flex justify-between items-center shadow-md">
-              <div className="flex items-center gap-2">
-                <MdNotificationsNone size={24} className="text-amber-300" />
-                <h2 className="font-black text-base uppercase tracking-wider">
-                  {hasControlAccess ? "Super Admin Console" : isDeptHead ? "Head Verification Hub" : "Notification Board"}
+            <div className="flex items-center justify-between bg-red-800 p-4 text-amber-100 shadow-md sm:p-5">
+              <div className="flex min-w-0 items-center gap-2">
+                <MdNotificationsNone size={24} className="shrink-0 text-amber-300" />
+                <h2 className="truncate text-sm font-black uppercase tracking-wider sm:text-base">
+                  {hasControlAccess
+                    ? "Super Admin Console"
+                    : isDeptHead
+                    ? "Head Verification Hub"
+                    : "Notification Board"}
                 </h2>
               </div>
-              <div className="flex items-center gap-3">
+
+              <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                 {hasControlAccess && (
-                  <div className="flex bg-red-900/50 p-1 rounded-xl border border-red-700/30">
-                    <button onClick={() => setActiveSubTab("admit")} className={`p-2 rounded-lg transition-all cursor-pointer ${activeSubTab === "admit" ? "bg-white text-red-800 shadow-sm" : "text-amber-100/60"}`}><FaBell size={14} /></button>
-                    <button onClick={() => setActiveSubTab("dept")} className={`p-2 rounded-lg transition-all cursor-pointer ${activeSubTab === "dept" ? "bg-white text-red-800 shadow-sm" : "text-amber-100/60"}`}><FaBuilding size={14} /></button>
+                  <div className="flex rounded-xl border border-red-700/30 bg-red-900/50 p-1">
+                    <button
+                      type="button"
+                      onClick={() => setActiveSubTab("admit")}
+                      className={`rounded-lg p-2 transition-all ${
+                        activeSubTab === "admit"
+                          ? "bg-white text-red-800 shadow-sm"
+                          : "text-amber-100/60"
+                      }`}
+                    >
+                      <FaBell size={14} />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setActiveSubTab("dept")}
+                      className={`rounded-lg p-2 transition-all ${
+                        activeSubTab === "dept"
+                          ? "bg-white text-red-800 shadow-sm"
+                          : "text-amber-100/60"
+                      }`}
+                    >
+                      <FaBuilding size={14} />
+                    </button>
                   </div>
                 )}
-                <button onClick={onClose} className="p-2 hover:bg-red-900 rounded-xl transition-colors cursor-pointer"><FaTimes size={18} /></button>
+
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="rounded-xl p-2 transition-colors hover:bg-red-900"
+                >
+                  <FaTimes size={18} />
+                </button>
               </div>
             </div>
 
-            <div className="w-full bg-white border-b border-gray-100 p-3 flex items-center justify-between gap-2 shadow-xs px-4">
+            <div className="flex w-full items-center justify-between gap-2 border-b border-gray-100 bg-white px-3 py-3 shadow-xs sm:px-4">
               <div className="flex gap-2">
-                <button onClick={() => setTimeFilter("hour")} className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer border ${timeFilter === "hour" ? "bg-red-50 border-red-800 text-red-800 shadow-xs" : "bg-gray-50 border-transparent text-gray-500 hover:bg-gray-100"}`}><FaClock size={11} /> Hourly</button>
-                <button onClick={() => setTimeFilter("week")} className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer border ${timeFilter === "week" ? "bg-red-50 border-red-800 text-red-800 shadow-xs" : "bg-gray-50 border-transparent text-gray-500 hover:bg-gray-100"}`}><FaCalendarAlt size={11} /> Weekly</button>
+                <button
+                  type="button"
+                  onClick={() => setTimeFilter("hour")}
+                  className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-black uppercase tracking-wider transition-all sm:px-4 ${
+                    timeFilter === "hour"
+                      ? "border-red-800 bg-red-50 text-red-800 shadow-xs"
+                      : "border-transparent bg-gray-50 text-gray-500 hover:bg-gray-100"
+                  }`}
+                >
+                  <FaClock size={11} /> Hourly
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setTimeFilter("week")}
+                  className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-black uppercase tracking-wider transition-all sm:px-4 ${
+                    timeFilter === "week"
+                      ? "border-red-800 bg-red-50 text-red-800 shadow-xs"
+                      : "border-transparent bg-gray-50 text-gray-500 hover:bg-gray-100"
+                  }`}
+                >
+                  <FaCalendarAlt size={11} /> Weekly
+                </button>
               </div>
 
               {!hasControlAccess && !isDeptHead && (
-                <button onClick={() => setOpenApplicationForm(true)} className="flex items-center gap-1.5 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-stone-950 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95">
-                  <FaFileSignature size={12} /> APPLY REQUEST
+                <button
+                  type="button"
+                  onClick={() => setOpenApplicationForm(true)}
+                  className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-3 py-2 text-xs font-black uppercase tracking-wider text-stone-950 shadow-xs transition-all hover:bg-amber-600 active:scale-95"
+                >
+                  <FaFileSignature size={12} />
+                  <span className="hidden sm:inline">Apply Request</span>
+                  <span className="sm:hidden">Apply</span>
                 </button>
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+            <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
               {activeSubTab === "admit" ? (
                 activeAdmitRequests.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center my-auto text-gray-400"><span className="text-xs font-black uppercase tracking-widest">No Active Requests</span></div>
+                  <div className="my-auto flex flex-col items-center justify-center text-gray-400">
+                    <span className="text-xs font-black uppercase tracking-widest">
+                      No Active Requests
+                    </span>
+                  </div>
                 ) : (
-                  activeAdmitRequests.map((item) => (
-                    item.notification_type === "Welcome" || item.title?.toLowerCase().includes("welcome") ? (
-                      <WelcomeCard key={item.id} item={item} userName={userName} handleManualDelete={handleManualDelete} />
-                    ) : item.subject || item.message?.toLowerCase().includes("password") || item.notification_type === "password_reset" ? (
-                      <PasswordResetCard
-                        key={item.id}
-                        item={item}
-                        isDeptHead={isDeptHead}
-                        hasControlAccess={hasControlAccess}
-                        processingId={processingId}
-                        passwordInputId={passwordInputId}
-                        newPassword={newPassword}
-                        setNewPassword={setNewPassword}
-                        setPasswordInputId={setPasswordInputId}
-                        handleManualDelete={handleManualDelete}
-                        handleStatusUpdate={handleStatusUpdate}
-                        handleFinalPasswordReset={handleFinalPasswordReset}
-                      />
-                    ) : (
+                  activeAdmitRequests.map((item) => {
+                    const title = String(item.title || item.subject || "").toLowerCase();
+                    const type = String(item.notification_type || "").toLowerCase();
+                    const message = String(item.message || "").toLowerCase();
+
+                    if (type === "welcome" || title.includes("welcome")) {
+                      return (
+                        <WelcomeCard
+                          key={item.id}
+                          item={item}
+                          userName={userName}
+                          handleManualDelete={handleManualDelete}
+                        />
+                      );
+                    }
+
+                    if (item.subject || message.includes("password") || type === "password_reset") {
+                      return (
+                        <PasswordResetCard
+                          key={item.id}
+                          item={item}
+                          isDeptHead={isDeptHead}
+                          hasControlAccess={hasControlAccess}
+                          processingId={processingId}
+                          passwordInputId={passwordInputId}
+                          newPassword={newPassword}
+                          setNewPassword={setNewPassword}
+                          setPasswordInputId={setPasswordInputId}
+                          handleManualDelete={handleManualDelete}
+                          handleStatusUpdate={handleStatusUpdate}
+                          handleFinalPasswordReset={handleFinalPasswordReset}
+                        />
+                      );
+                    }
+
+                    return (
                       <AdmitCard
                         key={item.id}
                         item={item}
@@ -336,38 +523,71 @@ export default function Notification({
                         handleApproveAdmit={handleApproveAdmit}
                         handleDeclineAdmit={handleDeclineAdmit}
                       />
-                    )
-                  ))
+                    );
+                  })
                 )
               ) : (
-                hasControlAccess && (
-                  activeDeptRequests.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center my-auto text-gray-400"><span className="text-xs font-black uppercase tracking-widest">No Department Requests</span></div>
-                  ) : (
-                    activeDeptRequests.map((item) => (
-                      <div key={item.id} className="bg-white border border-gray-100 rounded-3xl p-4 shadow-sm flex flex-col gap-3">
-                        <div className="flex justify-between items-center">
-                          <span className="bg-amber-50 text-amber-800 text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border border-amber-100">Structure Request</span>
-                          <span className="text-[10px] font-black text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100">PENDING</span>
-                        </div>
-                        <div className="text-left">
-                          <h4 className="text-sm font-black text-gray-800 uppercase">Create {item.department_name}</h4>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-50">
-                          <button type="button" disabled={processingId !== null} onClick={() => handleApproveDeptRequest(item.id)} className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-[10px] font-black py-2.5 rounded-xl transition-all">ADD MODULE</button>
-                          <button type="button" disabled={processingId !== null} onClick={() => handleDeclineDeptRequest(item.id)} className="bg-red-50 hover:bg-red-100 disabled:opacity-50 text-red-700 text-[10px] font-black py-2.5 rounded-xl transition-all">REMOVE</button>
-                        </div>
+                hasControlAccess &&
+                (activeDeptRequests.length === 0 ? (
+                  <div className="my-auto flex flex-col items-center justify-center text-gray-400">
+                    <span className="text-xs font-black uppercase tracking-widest">
+                      No Department Requests
+                    </span>
+                  </div>
+                ) : (
+                  activeDeptRequests.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex flex-col gap-3 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="rounded-full border border-amber-100 bg-amber-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-amber-800">
+                          Structure Request
+                        </span>
+                        <span className="rounded-full border border-amber-100 bg-amber-50 px-2.5 py-1 text-[10px] font-black text-amber-700">
+                          Pending
+                        </span>
                       </div>
-                    ))
-                  )
-                )
+
+                      <div className="text-left">
+                        <h4 className="text-sm font-black uppercase text-gray-800">
+                          Create {item.department_name}
+                        </h4>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 border-t border-gray-50 pt-2">
+                        <button
+                          type="button"
+                          disabled={processingId !== null}
+                          onClick={() => handleApproveDeptRequest(item.id)}
+                          className="rounded-xl bg-emerald-600 py-2.5 text-[10px] font-black text-white transition-all hover:bg-emerald-700 disabled:opacity-50"
+                        >
+                          Add Module
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={processingId !== null}
+                          onClick={() => handleDeclineDeptRequest(item.id)}
+                          className="rounded-xl bg-red-50 py-2.5 text-[10px] font-black text-red-700 transition-all hover:bg-red-100 disabled:opacity-50"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ))
               )}
             </div>
           </motion.div>
         </>
       )}
 
-      <Application isOpen={openApplicationForm} onClose={() => setOpenApplicationForm(false)} defaultSubject="🔐 Request for password reset" />
+      <Application
+        isOpen={openApplicationForm}
+        onClose={() => setOpenApplicationForm(false)}
+        defaultSubject="Request for password reset"
+      />
     </AnimatePresence>
   );
 }

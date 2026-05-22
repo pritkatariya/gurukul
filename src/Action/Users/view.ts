@@ -1,8 +1,19 @@
 import { toast } from "sonner";
 
-export const handleUserView = (userId: number | string, data?: any) => {
-    console.log("Executing Action: View User details for ID ->", userId);
-    toast.info(`Viewing details of: ${data?.name || 'User'}`);
-    
-    // અહીં તમે વ્યુ મોડલ ખોલવાનું સ્ટેટ ફંક્શન પાસ કરીને ટ્રીગર કરાવી શકો છો
+export const handleUserView = (id: string | number, item: any) => {
+  try {
+    const userDetails = `
+User ID: ${id}
+Full Name: ${item?.name || "-"}
+Role / Position: ${item?.role || "-"}
+Username: ${item?.dept || "-"}
+Joined Date: ${item?.date || "-"}
+Status: ${item?.status || "-"}
+`;
+
+    window.alert(userDetails);
+  } catch (error) {
+    console.error(error);
+    toast.error("Unable to view user details");
+  }
 };

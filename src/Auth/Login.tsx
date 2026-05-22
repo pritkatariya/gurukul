@@ -1,9 +1,8 @@
 import { motion } from "motion/react";
-import { FaUserAlt, FaLock, FaArrowRight } from "react-icons/fa";
-import Logo from '../assets/gurukul logo.png';
-import '../App.css';
+import { FaUserAlt, FaLock, FaArrowRight, FaVolumeDown, FaVolumeUp } from "react-icons/fa";
+import Logo from "../assets/gurukul logo.png";
+import "../App.css";
 import Input from "../Components/commen/Input";
-import { FaVolumeDown, FaVolumeUp } from "react-icons/fa";
 import ElasticSlider from "../Components/ElasticSlider";
 import { useMusic } from "../Components/MusicProvider";
 import { useState, useRef, useEffect } from "react";
@@ -17,6 +16,7 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectedSubject, setSelectedSubject] = useState("");
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
 
     const sidebarRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
@@ -27,48 +27,83 @@ export default function Login() {
                 setIsSidebarOpen(false);
             }
         }
+
         if (isSidebarOpen) {
             document.addEventListener("mousedown", handleClickOutside);
         }
+
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [isSidebarOpen]);
 
-    const preventDefault = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!username.trim() || !password.trim()) {
-            toast.error('Please enter both username and password');
-            return;
-        }
+    const preventDefault = async (event: React.FormEvent) => {
+        event.preventDefault();
 
-        if (username === 'super-admin' && password === 'admin123') {
-            toast.success('Super Admin Login Successful! 🎉');
-            localStorage.setItem('user', JSON.stringify({
-                id: 123098, username: 'super-admin', role: 'admin', full_name: 'Super Admin Principal', department_id: 0, profile_image_url: null
-            }));
-            localStorage.setItem('user_role', 'SUPER_ADMIN');
-            navigate("/deshbord");
+        if (isLoggingIn) return;
+
+        if (!username.trim() || !password.trim()) {
+            toast.error("Please enter both username and password");
             return;
         }
 
         try {
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            setIsLoggingIn(true);
+
+            if (username === "super-admin" && password === "admin123") {
+                toast.success("Super Admin Login Successful!");
+
+                localStorage.setItem(
+                    "user",
+                    JSON.stringify({
+                        id: 123098,
+                        username: "super-admin",
+                        role: "admin",
+                        full_name: "Super Admin Principal",
+                        department_id: 5,
+                        profile_image_url: Logo,
+                    })
+                );
+
+                localStorage.setItem("user_role", "SUPER_ADMIN");
+
+                setTimeout(() => {
+                    navigate("/deshbord");
+                }, 450);
+
+                return;
+            }
+
+            let API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+            if (API_URL.endsWith("/")) API_URL = API_URL.slice(0, -1);
+
             const response = await fetch(`${API_URL}/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password }),
             });
 
             const data = await response.json();
+
             if (response.ok && data.success) {
-                toast.success('Login Successful! 🎉');
-                localStorage.setItem('user', JSON.stringify(data.user));
-                localStorage.setItem('user_role', data.user_role || data.user.role || "user");
-                navigate("/deshbord");
+                toast.success("Login Successful!");
+
+                const userWithImage = {
+                    ...data.user,
+                    profile_image_url: data.user?.profile_image_url || Logo,
+                };
+
+                localStorage.setItem("user", JSON.stringify(userWithImage));
+                localStorage.setItem("user_role", data.user_role || data.user.role || "user");
+
+                setTimeout(() => {
+                    navigate("/deshbord");
+                }, 450);
             } else {
-                toast.error(data.message || 'Invalid credentials');
+                toast.error(data.message || "Invalid credentials");
+                setIsLoggingIn(false);
             }
         } catch (error) {
-            toast.error('Server offline or connection refused');
+            toast.error("Server offline or connection refused");
+            setIsLoggingIn(false);
         }
     };
 
@@ -78,8 +113,8 @@ export default function Login() {
     };
 
     return (
-        <div className="w-screen min-h-screen flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-20 overflow-hidden relative selection:bg-red-200 p-6 scrollbar-hide">
-            <div className="fixed left-0 top-4 z-9999 flex flex-col -translate-x-55.5 items-center gap-3 rounded-r-2xl bg-white py-2 pl-4 pr-5 shadow-2xl ring-1 ring-red-100 transition-transform duration-300 hover:translate-x-0 md:top-6">
+        <div className="relative flex min-h-screen w-screen items-center justify-center overflow-hidden bg-[#eef1f5] p-4 selection:bg-red-200 sm:p-6">
+            <div className="fixed left-0 top-4 z-50 flex -translate-x-55.5 flex-col items-center gap-3 rounded-r-2xl bg-white py-2 pl-4 pr-5 shadow-2xl ring-1 ring-red-100 transition-transform duration-300 hover:translate-x-0 md:top-6">
                 <ElasticSlider
                     defaultValue={volume}
                     startingValue={0}
@@ -100,92 +135,123 @@ export default function Login() {
                     {isMusicPlaying ? "Stop" : "Start"}
                 </button>
             </div>
-            <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-                <motion.div
-                    animate={{ x: [0, 50, 0], y: [0, 30, 0], scale: [1, 1.1, 1] }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute -top-20 -left-20 w-72 h-72 md:w-125 md:h-125 bg-red-100 rounded-full blur-[80px] md:blur-[100px] opacity-60"
-                />
-                <motion.div
-                    animate={{ x: [0, -40, 0], y: [0, 60, 0] }}
-                    transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute top-1/2 -right-10 w-80 h-80 md:w-150 md:h-150 bg-blue-50 rounded-full blur-[100px] md:blur-[120px] opacity-50"
-                />
-            </div>
 
-            <div className="fixed inset-0 -z-20 opacity-[0.05] pointer-events-none"
+            <div
+                className="fixed inset-0 -z-10 opacity-[0.05] pointer-events-none"
                 style={{
-                    backgroundImage: `linear-gradient(to right, #991b1b 1px, transparent 1px), linear-gradient(to bottom, #991b1b 1px, transparent 1px)`,
-                    backgroundSize: '40px 40px',
+                    backgroundImage:
+                        "linear-gradient(to right, #991b1b 1px, transparent 1px), linear-gradient(to bottom, #991b1b 1px, transparent 1px)",
+                    backgroundSize: "40px 40px",
                 }}
             />
 
             <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="hidden lg:flex w-full max-w-lg aspect-square p-10 rounded-[3rem] flex-col gap-8 bg-white/60 backdrop-blur-2xl shadow-[0_32px_64px_rgba(153,27,27,0.08)] border border-white/40 z-10 justify-center items-center text-center"
+                initial={{ opacity: 0, y: 28, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.55, ease: "easeOut" }}
+                className="grid w-full max-w-5xl overflow-hidden rounded-4xl bg-white p-3 shadow-[0_35px_90px_rgba(15,23,42,0.16)] sm:rounded-[2.5rem] md:grid-cols-[1.02fr_0.98fr] md:p-5"
             >
-                <div className="w-64 h-64 flex justify-center items-center p-4">
-                    <img src={Logo} className="w-full h-full object-contain drop-shadow-2xl" alt="Gurukul Logo" />
+                <div className="relative hidden min-h-140 overflow-hidden rounded-[1.75rem] bg-linear-to-br from-red-700 via-red-800 to-amber-600 p-10 text-white md:flex md:flex-col md:items-center md:justify-between lg:p-12">
+                    <div className="absolute inset-0 opacity-15">
+                        <div
+                            className="h-full w-full"
+                            style={{
+                                backgroundImage:
+                                    "linear-gradient(to right, rgba(255,255,255,0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.35) 1px, transparent 1px)",
+                                backgroundSize: "34px 34px",
+                            }}
+                        />
+                    </div>
+
+                    <div className="relative z-10 flex justify-center">
+                        <div className="flex h-52 w-52 items-center justify-center rounded-4xl bg-white p-8 ring-1 ring-white/20 headerinset lg:h-64 lg:w-64">
+                            <img src={Logo} alt="Gurukul" className="h-full w-full object-contain" />
+                        </div>
+                    </div>
+
+                    <div className="relative z-10 flex flex-col items-center text-center">
+                        <h1 className="mt-10 flex max-w-sm items-center justify-center text-4xl font-bold leading-tight tracking-tight lg:text-2xl">
+                            Please Add your <br /> I AM GURUKUL SEVAK <br /> Identity
+                        </h1>
+
+                        <div className="mt-4 h-1.5 w-40 rounded-full bg-amber-200" />
+
+                        <p className="mt-8 max-w-sm text-sm font-semibold leading-7 text-white/80">
+                            Secure access for Gurukul sevaks, department heads, and system administration.
+                        </p>
+                    </div>
                 </div>
-                <div className="w-full pt-8 border-t-2 border-red-800/20">
-                    <h1 className="text-2xl md:text-3xl text-red-900 font-medium leading-relaxed">
-                        Please input your <br />
-                        <span className="font-black uppercase tracking-tight text-red-700">I AM GURUKUL SEVAK</span> <br />
-                        Identity
-                    </h1>
+
+                <div className="flex min-h-140 flex-col items-center justify-center px-5 py-10 sm:px-8 md:px-10 lg:px-14">
+                    <div className="mb-8 flex flex-col items-center text-center">
+                        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 p-2 ring-1 ring-red-100 md:hidden">
+                            <img src={Logo} className="h-full w-full object-contain" alt="Logo" />
+                        </div>
+
+                        <h2 className="text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
+                            Welcome Back
+                        </h2>
+                        <p className="mt-2 text-sm font-semibold text-gray-400">
+                            Please login to your account
+                        </p>
+                    </div>
+
+                    <form className="flex w-full max-w-sm flex-col gap-4" onSubmit={preventDefault}>
+                        <Input
+                            icon={<FaUserAlt className="text-red-800/45" />}
+                            placeholder="Username"
+                            className="h-14 w-full rounded-2xl border-gray-100 bg-gray-50 text-sm transition-all focus:border-red-300"
+                            value={username}
+                            onChange={(event) => setUsername(event.target.value)}
+                        />
+
+                        <Input
+                            icon={<FaLock className="text-red-800/45" />}
+                            placeholder="Password"
+                            type="password"
+                            className="h-14 w-full rounded-2xl border-gray-100 bg-gray-50 text-sm transition-all focus:border-red-300"
+                            value={password}
+                            onChange={(event) => setPassword(event.target.value)}
+                        />
+
+                        <div className="flex justify-end">
+                            <button
+                                type="button"
+                                disabled={isLoggingIn}
+                                onClick={() => openApplicationWithSubject("Request for password reset")}
+                                className="text-[11px] font-black uppercase tracking-wider text-red-800/50 transition-colors hover:text-red-800 disabled:opacity-50"
+                            >
+                                Forgot Password?
+                            </button>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={isLoggingIn}
+                            className="mt-5 flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-red-800 text-sm font-black uppercase tracking-wider text-white shadow-[0_14px_30px_rgba(153,27,27,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-red-900 active:scale-95 disabled:cursor-not-allowed disabled:opacity-75"
+                        >
+                            {isLoggingIn ? (
+                                <>
+                                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                                    Logging In...
+                                </>
+                            ) : (
+                                <>
+                                    Login
+                                    <FaArrowRight className="text-xs" />
+                                </>
+                            )}
+                        </button>
+                    </form>
                 </div>
             </motion.div>
 
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="w-full max-w-md flex flex-col justify-center items-center p-8 md:p-12 rounded-[3rem] bg-white/80 backdrop-blur-2xl shadow-[0_32px_64px_rgba(153,27,27,0.12)] border border-red-100 z-10"
-            >
-                <img src={Logo} className="w-16 mb-4 lg:hidden" alt="Logo" />
-
-                <div className="text-center mb-10">
-                    <h2 className="text-5xl font-black text-red-800 tracking-tighter">LOGIN</h2>
-                    <div className="h-1.5 w-12 bg-red-800 mx-auto mt-2 rounded-full" />
-                </div>
-
-                <form className="w-full flex flex-col gap-5" onSubmit={preventDefault}>
-                    <Input
-                        icon={<FaUserAlt className="text-red-800/50" />}
-                        placeholder="Username"
-                        className="w-full h-16 rounded-2xl border-gray-100 focus:border-red-300 transition-all"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                    />
-
-                    <Input
-                        icon={<FaLock className="text-red-800/50" />}
-                        placeholder="Password"
-                        type="password"
-                        className="w-full h-16 rounded-2xl border-gray-100 focus:border-red-300 transition-all"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-
-                    <button type="submit" className="w-full h-16 mt-4 rounded-2xl bg-red-800 text-white font-black text-lg flex items-center justify-center gap-3 shadow-[0_10px_25px_rgba(153,27,27,0.3)] hover:shadow-[0_15px_30px_rgba(153,27,27,0.4)] hover:-translate-y-1 active:scale-95 transition-all duration-300">
-                        ENTER
-                        <FaArrowRight className="text-sm" />
-                    </button>
-                </form>
-
-                <div className="mt-10 flex flex-col gap-3 items-center">
-                    <button
-                        onClick={() => openApplicationWithSubject("Request for password reset")}
-                        className="text-[10px] font-black text-red-800/40 hover:text-red-800 uppercase tracking-widest transition-colors cursor-pointer focus:outline-none"
-                    >
-                        Forgot password for Application?
-                    </button>
-                </div>
-            </motion.div>
-
-            <Application isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} sidebarRef={sidebarRef} defaultSubject={selectedSubject} />
-
+            <Application
+                isOpen={isSidebarOpen}
+                onClose={() => setIsSidebarOpen(false)}
+                sidebarRef={sidebarRef}
+                defaultSubject={selectedSubject}
+            />
         </div>
     );
 }
