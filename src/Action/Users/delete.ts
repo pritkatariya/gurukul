@@ -1,17 +1,34 @@
 import { toast } from "sonner";
 
-export const handleUserDelete = async (userId: number | string, refreshCallback?: () => void) => {
-    const isConfirmed = window.confirm("Are you sure you want to delete this record?");
-    if (!isConfirmed) return;
+export const handleUserDelete = async (
+  id: string | number,
+  refreshUsers?: () => void | Promise<void>
+) => {
+  try {
+    const confirmDelete = window.confirm("Are you sure you want to delete this user?");
+    if (!confirmDelete) return;
 
-    try {
-        console.log("Executing Action: Sending Delete API Request for ID ->", userId);
-        toast.error("Record deleted successfully!");
-        
-        if (refreshCallback) {
-            refreshCallback(); // એક્શન પત્યા પછી ટેબલ લિસ્ટ રીફ્રેશ કરવા માટે
-        }
-    } catch (error) {
-        toast.error("Failed to delete the user record");
+    let API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+    if (API_URL.endsWith("/")) API_URL = API_URL.slice(0, -1);
+
+    const response = await fetch(`${API_URL}/user/delete/${id}`, {
+      method: "DELETE"
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      toast.error(data.message || "Failed to delete user");
+      return;
     }
+
+    toast.success(data.message || "User deleted successfully");
+
+    if (refreshUsers) {
+      await refreshUsers();
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error("Server error while deleting user");
+  }
 };

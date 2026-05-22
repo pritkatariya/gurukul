@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import ChromaGrid from "../Components/ChromaGrid";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import "../App.css";
 import { GiPagoda } from "react-icons/gi";
@@ -8,12 +7,8 @@ import {
     FaChevronLeft,
     FaChevronRight,
     FaPlay,
-    FaVolumeDown,
-    FaVolumeUp,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import Stack from "./Stack";
-import ElasticSlider from "../Components/ElasticSlider";
 import { useMusic } from "../Components/MusicProvider";
 
 import LogoImg from "../assets/gurukul logo.png";
@@ -49,7 +44,7 @@ const fadeUp: Variants = {
         opacity: 1,
         y: 0,
         transition: {
-            duration: 0.9,
+            duration: 0.7,
             ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
         },
     },
@@ -57,30 +52,15 @@ const fadeUp: Variants = {
 
 function AnimatedSectionBackground() {
     return (
-        <>
-            <div
-                className="absolute inset-0 opacity-[0.05] pointer-events-none"
-                style={{
-                    backgroundImage:
-                        "linear-gradient(to right, #991b1b 1.5px, transparent 1.5px), linear-gradient(to bottom, #991b1b 1.5px, transparent 1.5px)",
-                    backgroundSize: "45px 45px",
-                    backgroundAttachment: "fixed",
-                    backgroundPosition: "0 0",
-                }}
-            />
-
-            <motion.div
-                animate={{ x: [0, 24, 0], y: [0, 16, 0], scale: [1, 1.04, 1] }}
-                transition={{ duration: 36, repeat: Infinity, ease: "easeInOut" }}
-                className="fixed -left-28 top-12 h-80 w-80 rounded-full bg-red-200/20 blur-[95px] pointer-events-none md:h-[34rem] md:w-[34rem]"
-            />
-
-            <motion.div
-                animate={{ x: [0, -24, 0], y: [0, 26, 0], scale: [1, 1.03, 1] }}
-                transition={{ duration: 40, repeat: Infinity, ease: "easeInOut" }}
-                className="fixed -right-24 bottom-20 h-80 w-80 rounded-full bg-red-300/20 blur-[110px] pointer-events-none md:h-[36rem] md:w-[36rem]"
-            />
-        </>
+        <div
+            className="absolute inset-0 opacity-[0.04] pointer-events-none"
+            style={{
+                backgroundImage:
+                    "linear-gradient(to right, #991b1b 1.5px, transparent 1.5px), linear-gradient(to bottom, #991b1b 1.5px, transparent 1.5px)",
+                backgroundSize: "45px 45px",
+                backgroundPosition: "0 0",
+            }}
+        />
     );
 }
 
@@ -90,7 +70,7 @@ export default function Overview() {
     const [heroIndex, setHeroIndex] = useState(0);
     const [overviewConfig, setOverviewConfig] = useState<OverviewApiConfig | null>(null);
 
-    const { isMusicPlaying, toggleMusic, volume, setVolume, playMusic } = useMusic();
+    const { isMusicPlaying, toggleMusic, playMusic } = useMusic();
 
     useEffect(() => {
         const loadOverviewConfig = async () => {
@@ -113,6 +93,18 @@ export default function Overview() {
 
         return () => window.removeEventListener("overview-config-updated", handleUpdated);
     }, []);
+    const dailyDarshanImages = [
+        BhayavadarImg,
+        SwaminarayanSceneImg,
+        BhayavadarImg,
+        SwaminarayanSceneImg,
+        BhayavadarImg,
+        SwaminarayanSceneImg,
+        BhayavadarImg,
+        SwaminarayanSceneImg,
+        BhayavadarImg,
+        SwaminarayanSceneImg,
+    ];
 
     useEffect(() => {
         const fetchAndPlayDefaultTrack = async () => {
@@ -139,7 +131,7 @@ export default function Overview() {
         const timer = window.setTimeout(() => {
             setLogoDocked(true);
             setLoading(false);
-        }, 5000);
+        }, 2500);
 
         return () => clearTimeout(timer);
     }, []);
@@ -151,7 +143,7 @@ export default function Overview() {
         () =>
             overviewConfig?.heroImages?.length
                 ? overviewConfig.heroImages
-                : [SwaminarayanSceneImg, BhayavadarImg, SwaminarayanSceneImg, BhayavadarImg],
+                : [SwaminarayanSceneImg, BhayavadarImg],
         [overviewConfig]
     );
 
@@ -163,71 +155,12 @@ export default function Overview() {
         [overviewConfig]
     );
 
-    const stackImageList = useMemo(
-        () =>
-            overviewConfig?.stackImages?.length
-                ? overviewConfig.stackImages
-                : [heroImages[0], resolvedCampusImg, resolvedLogoImg, BhayavadarImg],
-        [overviewConfig, heroImages, resolvedCampusImg, resolvedLogoImg]
-    );
-
-    const stackCards = useMemo(
-        () =>
-            stackImageList.map((src, index) => (
-                <div key={`${src}-${index}`} className="relative h-full w-full overflow-hidden shadow-2xl backdrop-blur-3xl rounded-2xl">
-                    <img
-                        src={src}
-                        alt={`Gurukul card ${index + 1}`}
-                        className="h-full w-full object-cover pointer-events-none"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-red-950/55 via-transparent to-transparent" />
-                </div>
-            )),
-        [stackImageList]
-    );
-
-    const chromaItems = useMemo(() => {
-        const images = overviewConfig?.chromaImages?.length
-            ? overviewConfig.chromaImages
-            : [SwaminarayanSceneImg, BhayavadarImg, LogoImg, SwaminarayanSceneImg, BhayavadarImg, LogoImg];
-
-        const titles = [
-            "Divine Blessings",
-            "Bhayavadar Gurukul",
-            "Gurukul Parampara",
-            "Aashirvad",
-            "Campus Life",
-            "Shree Gurukul",
-        ];
-
-        const subtitles = [
-            "Bhagwan Swaminarayan",
-            "Sanskar ane Shikshan",
-            "Bhakti, Vidya, Seva",
-            "Shanti ane Shraddha",
-            "Learning with Values",
-            "Red and White Theme",
-        ];
-
-        const colors = ["#DC2626", "#991B1B", "#EF4444", "#F87171", "#B91C1C", "#FCA5A5"];
-
-        return images.map((image, index) => ({
-            image,
-            title: titles[index % titles.length],
-            subtitle: subtitles[index % subtitles.length],
-            handle: "@gurukul",
-            location: index % 2 === 0 ? "Gurukul" : "Bhayavadar",
-            borderColor: colors[index % colors.length],
-            gradient: `linear-gradient(145deg, ${colors[index % colors.length]}, #120F17)`,
-        }));
-    }, [overviewConfig]);
-
     useEffect(() => {
         if (loading || heroImages.length === 0) return;
 
         const interval = window.setInterval(() => {
             setHeroIndex((prev) => (prev + 1) % heroImages.length);
-        }, 5000);
+        }, 6000);
 
         return () => clearInterval(interval);
     }, [loading, heroImages.length]);
@@ -254,10 +187,10 @@ export default function Overview() {
             <AnimatePresence>
                 {loading && (
                     <motion.div
-                        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-red-900 select-none"
+                        className="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-red-900 select-none"
                         exit={{
                             opacity: 0,
-                            transition: { duration: 0.85, ease: [0.76, 0, 0.24, 1] },
+                            transition: { duration: 0.55, ease: [0.76, 0, 0.24, 1] },
                         }}
                     >
                         <div
@@ -270,18 +203,6 @@ export default function Overview() {
                         />
 
                         <div className="relative flex flex-col items-center justify-center">
-                            <motion.div
-                                initial={{ scale: 0.85, opacity: 0 }}
-                                animate={{ scale: 1.12, opacity: 0.18 }}
-                                transition={{
-                                    duration: 3.2,
-                                    repeat: Infinity,
-                                    repeatType: "reverse",
-                                    ease: "easeInOut",
-                                }}
-                                className="absolute h-64 w-64 rounded-full bg-white blur-3xl pointer-events-none"
-                            />
-
                             <motion.div
                                 layoutId="gurukul-main-logo"
                                 initial={{
@@ -296,7 +217,7 @@ export default function Overview() {
                                     rotate: 0,
                                     filter: "blur(0px)",
                                 }}
-                                transition={{ duration: 1.3, ease: [0.34, 1.56, 0.64, 1] }}
+                                transition={{ duration: 1, ease: [0.34, 1.56, 0.64, 1] }}
                                 className="z-10 flex h-32 w-32 items-center justify-center rounded-[40px] border border-white/20 bg-white/10 p-5 shadow-2xl backdrop-blur-md md:h-40 md:w-40"
                             >
                                 <img
@@ -309,7 +230,7 @@ export default function Overview() {
                             <motion.h2
                                 initial={{ opacity: 0, y: 24 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.45, duration: 0.9, ease: "easeOut" }}
+                                transition={{ delay: 0.35, duration: 0.7, ease: "easeOut" }}
                                 className="mt-6 text-center text-3xl font-black tracking-widest text-white md:text-4xl"
                             >
                                 GURUKUL
@@ -318,7 +239,7 @@ export default function Overview() {
                             <motion.button
                                 initial={{ opacity: 0, y: 18 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.75, duration: 0.75 }}
+                                transition={{ delay: 0.55, duration: 0.6 }}
                                 onClick={handleStart}
                                 className="z-50 mt-6 flex cursor-pointer items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-red-900 shadow-lg transition-all hover:scale-105 hover:bg-gray-100 active:scale-95 md:text-base"
                             >
@@ -331,27 +252,13 @@ export default function Overview() {
             </AnimatePresence>
 
             <main className="w-screen overflow-x-hidden bg-white scrollbar-hide">
-                <div className="fixed left-0 top-4 z-[9999] flex -translate-x-[13.8rem] flex-col items-center gap-3 rounded-r-2xl bg-white py-2 pl-4 pr-5 shadow-2xl ring-1 ring-red-100 transition-transform duration-300 hover:translate-x-0 md:top-6">
-                    <ElasticSlider
-                        defaultValue={volume}
-                        startingValue={0}
-                        maxValue={100}
-                        isStepped
-                        stepSize={5}
-                        leftIcon={<FaVolumeDown className="text-xs" />}
-                        rightIcon={<FaVolumeUp className="text-xs" />}
-                        onChange={setVolume}
-                        className="w-36"
-                    />
-
-                    <button
-                        type="button"
-                        onClick={toggleMusic}
-                        className="flex h-10 min-w-16 items-center justify-center rounded-full bg-red-800 px-4 text-sm font-bold text-white shadow-md transition-all hover:bg-red-700 active:scale-95"
-                    >
-                        {isMusicPlaying ? "Stop" : "Start"}
-                    </button>
-                </div>
+                <button
+                    type="button"
+                    onClick={toggleMusic}
+                    className="fixed left-4 top-4 z-50 flex h-11 items-center justify-center rounded-full bg-white px-5 text-sm font-bold text-red-800 shadow-2xl ring-1 ring-red-100 transition-all hover:bg-red-50 active:scale-95 md:left-8 md:top-6 md:h-12"
+                >
+                    {isMusicPlaying ? "Stop Music" : "Start Music"}
+                </button>
 
                 <AnimatePresence>
                     {logoDocked && (
@@ -386,10 +293,10 @@ export default function Overview() {
                             key={heroIndex}
                             src={heroImages[heroIndex]}
                             alt="Gurukul Hero Background"
-                            initial={{ opacity: 0, scale: 1.06 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 1.03 }}
-                            transition={{ duration: 1.15, ease: "easeInOut" }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.8, ease: "easeInOut" }}
                             className="absolute inset-0 h-full w-full object-cover"
                         />
                     </AnimatePresence>
@@ -401,8 +308,7 @@ export default function Overview() {
                         initial="hidden"
                         animate="visible"
                         className="relative z-10 mx-auto max-w-4xl px-6 text-center text-white"
-                    >
-                    </motion.div>
+                    />
 
                     <button
                         type="button"
@@ -431,7 +337,7 @@ export default function Overview() {
                             variants={fadeUp}
                             initial="hidden"
                             whileInView="visible"
-                            viewport={{ once: true, amount: 0.35 }}
+                            viewport={{ once: true, amount: 0.25 }}
                             className="flex flex-col items-center text-center"
                         >
                             <div className="flex h-32 w-32 flex-col items-center justify-center gap-1 rounded-[2.25rem] border-[3px] border-red-200 bg-linear-to-tl from-red-800 to-red-600 shadow-2xl md:h-44 md:w-44 md:rounded-[3rem]">
@@ -455,14 +361,15 @@ export default function Overview() {
                                 variants={fadeUp}
                                 initial="hidden"
                                 whileInView="visible"
-                                viewport={{ once: true, amount: 0.25 }}
-                                className="h-72 w-full rounded-[2.5rem] bg-red-800 p-4 shadow-2xl md:h-112 md:p-6 lg:w-[62%]"
+                                viewport={{ once: true, amount: 0.2 }}
+                                className="h-72 w-full rounded-[2.5rem] p-4 shadow-2xl md:h-112 md:p-6 lg:w-[62%]"
                             >
                                 <div className="h-full w-full overflow-hidden rounded-[1.75rem] border border-red-950/20 bg-white shadow-inner">
                                     <img
                                         src={resolvedCampusImg}
-                                        className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                                        className="h-full w-full object-cover"
                                         alt="Bhayavadar Gurukul Overview"
+                                        loading="lazy"
                                     />
                                 </div>
                             </motion.div>
@@ -474,14 +381,15 @@ export default function Overview() {
                                         variants={fadeUp}
                                         initial="hidden"
                                         whileInView="visible"
-                                        viewport={{ once: true, amount: 0.25 }}
-                                        className="h-52 w-full rounded-4xl bg-red-800 p-4 shadow-2xl md:h-54"
+                                        viewport={{ once: true, amount: 0.2 }}
+                                        className="h-52 w-full rounded-4xl p-4 shadow-2xl md:h-54"
                                     >
                                         <div className="h-full w-full overflow-hidden rounded-[1.25rem] border border-red-950/20 bg-white shadow-inner">
                                             <img
                                                 src={src}
-                                                className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                                                className="h-full w-full object-cover"
                                                 alt={`Gurukul Gallery ${index + 1}`}
+                                                loading="lazy"
                                             />
                                         </div>
                                     </motion.div>
@@ -490,97 +398,49 @@ export default function Overview() {
                         </div>
                     </div>
                 </section>
+                <section className="relative min-h-screen w-full overflow-hidden px-4 py-14 sm:px-5 md:px-8 md:py-24">
+                    <AnimatedSectionBackground />
 
-                {(overviewConfig?.showStackSection ?? true) && (
-                    <section className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-5 py-20 md:px-8">
-                        <AnimatedSectionBackground />
+                    <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center">
+                        <motion.div
+                            variants={fadeUp}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.25 }}
+                            className="flex flex-col items-center text-center"
+                        >
+                            <h2 className="text-4xl font-black tracking-tight text-red-800 md:text-5xl">
+                                Daily Darshan
+                            </h2>
 
-                        <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
-                            <motion.div
-                                variants={fadeUp}
-                                initial="hidden"
-                                whileInView="visible"
-                                viewport={{ once: true, amount: 0.35 }}
-                                className="text-center text-red-800 lg:text-left"
-                            >
-                                <p className="text-sm font-bold uppercase tracking-[0.35em] text-red-700">
-                                    Gurukul Gallery
-                                </p>
+                            <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-red-700 md:text-lg md:leading-8">
+                                A divine abode of learning and devotion, where the sacred meets the scholarly.
+                            </p>
+                        </motion.div>
 
-                                <h2 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">
-                                    {overviewConfig?.stackTitle || "Memories in Motion"}
-                                </h2>
-
-                                <p className="mx-auto mt-5 max-w-xl text-base font-semibold leading-8 text-red-700/80 md:text-lg lg:mx-0">
-                                    {overviewConfig?.stackSubtitle || "Drag karo, click karo, athva wait karo."}
-                                </p>
-                            </motion.div>
-
-                            <motion.div
-                                variants={fadeUp}
-                                initial="hidden"
-                                whileInView="visible"
-                                viewport={{ once: true, amount: 0.35 }}
-                                className="mx-auto h-76 w-76 md:h-108 md:w-108"
-                            >
-                                <Stack
-                                    randomRotation
-                                    sensitivity={160}
-                                    sendToBackOnClick
-                                    autoplay
-                                    autoplayDelay={4200}
-                                    pauseOnHover
-                                    mobileClickOnly
-                                    cards={stackCards}
-                                    animationConfig={{ stiffness: 180, damping: 26 }}
-                                />
-                            </motion.div>
-                        </div>
-                    </section>
-                )}
-
-                {(overviewConfig?.showChromaSection ?? true) && (
-                    <section className="relative min-h-screen w-full overflow-hidden px-5 py-20 md:px-8 scrollbar-hide">
-                        <AnimatedSectionBackground />
-
-                        <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center">
-                            <motion.div
-                                variants={fadeUp}
-                                initial="hidden"
-                                whileInView="visible"
-                                viewport={{ once: true, amount: 0.35 }}
-                                className="text-center"
-                            >
-                                <p className="text-xs font-bold uppercase tracking-[0.35em] text-red-700 md:text-sm">
-                                    Chroma Stories
-                                </p>
-                                <h2 className="mt-3 text-4xl font-black tracking-tight text-red-800 md:text-6xl">
-                                    {overviewConfig?.chromaTitle || "Gurukul Highlights"}
-                                </h2>
-                                <p className="mx-auto mt-5 max-w-2xl text-base font-semibold leading-8 text-red-700/80 md:text-lg">
-                                    {overviewConfig?.chromaSubtitle ||
-                                        "Move cursor over cards to reveal color spotlight."}
-                                </p>
-                            </motion.div>
-
-                            <motion.div
-                                variants={fadeUp}
-                                initial="hidden"
-                                whileInView="visible"
-                                viewport={{ once: true, amount: 0.2 }}
-                                className="mt-14 h-350 w-full rounded-4xl md:h-auto"
-                            >
-                                <ChromaGrid
-                                    items={chromaItems}
-                                    radius={300}
-                                    damping={0.7}
-                                    fadeOut={0.8}
-                                    ease="power3.out"
-                                />
-                            </motion.div>
-                        </div>
-                    </section>
-                )}
+                        <motion.div
+                            variants={fadeUp}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.15 }}
+                            className="mt-10 grid w-full grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5"
+                        >
+                            {dailyDarshanImages.slice(0, 10).map((src, index) => (
+                                <div
+                                    key={`${src}-${index}`}
+                                    className="group aspect-4/5 w-full overflow-hidden rounded-2xl border border-amber-200/70 bg-white/20 p-1.5 shadow-lg backdrop-blur-sm sm:rounded-3xl"
+                                >
+                                    <img
+                                        src={src}
+                                        alt={`Daily Darshan ${index + 1}`}
+                                        loading="lazy"
+                                        className="h-full w-full rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105 sm:rounded-[1.25rem]"
+                                    />
+                                </div>
+                            ))}
+                        </motion.div>
+                    </div>
+                </section>
             </main>
         </>
     );

@@ -1,23 +1,13 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { FaImage, FaRotateLeft, FaEye, FaEyeSlash, FaTrash } from "react-icons/fa6";
+import { FaImage, FaRotateLeft, FaTrash } from "react-icons/fa6";
 
 type OverviewConfig = {
     heroImages: string[];
     logoImage: string;
-
     campusImage: string;
     campusGalleryImages: string[];
-
-    stackTitle: string;
-    stackSubtitle: string;
-    stackImages: string[];
-    showStackSection: boolean;
-
-    chromaTitle: string;
-    chromaSubtitle: string;
-    chromaImages: string[];
-    showChromaSection: boolean;
+    dailyDarshanImages: string[];
 };
 
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");
@@ -25,19 +15,9 @@ const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000").replac
 const defaultConfig: OverviewConfig = {
     heroImages: [],
     logoImage: "",
-
     campusImage: "",
     campusGalleryImages: [],
-
-    stackTitle: "Memories in Motion",
-    stackSubtitle: "Drag karo, click karo, athva wait karo.",
-    stackImages: [],
-    showStackSection: true,
-
-    chromaTitle: "Gurukul Highlights",
-    chromaSubtitle: "Move cursor over cards to reveal color spotlight.",
-    chromaImages: [],
-    showChromaSection: true,
+    dailyDarshanImages: [],
 };
 
 const isBlobUrl = (value: string) => value.startsWith("blob:");
@@ -49,8 +29,7 @@ export default function OverviewController() {
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [campusFile, setCampusFile] = useState<File | null>(null);
     const [campusGalleryFiles, setCampusGalleryFiles] = useState<File[]>([]);
-    const [stackFiles, setStackFiles] = useState<File[]>([]);
-    const [chromaFiles, setChromaFiles] = useState<File[]>([]);
+    const [dailyDarshanFiles, setDailyDarshanFiles] = useState<File[]>([]);
 
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -62,6 +41,7 @@ export default function OverviewController() {
                 const text = await response.text();
 
                 let data: any = null;
+
                 try {
                     data = text ? JSON.parse(text) : null;
                 } catch {
@@ -86,11 +66,13 @@ export default function OverviewController() {
 
     useEffect(() => {
         return () => {
-            [...config.heroImages, ...config.campusGalleryImages, ...config.stackImages, ...config.chromaImages].forEach(
-                (src) => {
-                    if (isBlobUrl(src)) URL.revokeObjectURL(src);
-                }
-            );
+            [
+                ...config.heroImages,
+                ...config.campusGalleryImages,
+                ...config.dailyDarshanImages,
+            ].forEach((src) => {
+                if (isBlobUrl(src)) URL.revokeObjectURL(src);
+            });
 
             if (isBlobUrl(config.logoImage)) URL.revokeObjectURL(config.logoImage);
             if (isBlobUrl(config.campusImage)) URL.revokeObjectURL(config.campusImage);
@@ -103,15 +85,31 @@ export default function OverviewController() {
 
     const handleMultiImageUpload = (
         event: React.ChangeEvent<HTMLInputElement>,
-        imageKey: "heroImages" | "campusGalleryImages" | "stackImages" | "chromaImages",
-        setFilesArray: React.Dispatch<React.SetStateAction<File[]>>
+        imageKey: "heroImages" | "campusGalleryImages" | "dailyDarshanImages",
+        setFilesArray: React.Dispatch<React.SetStateAction<File[]>>,
+        maxCount?: number
     ) => {
         const files = Array.from(event.target.files || []);
         if (!files.length) return;
 
-        setFilesArray((prev) => [...prev, ...files]);
+        const currentImages = config[imageKey];
+        const remainingSlots = maxCount ? Math.max(maxCount - currentImages.length, 0) : files.length;
 
-        const previews = files.map((file) => URL.createObjectURL(file));
+        if (maxCount && remainingSlots <= 0) {
+            toast.error(`Maximum ${maxCount} images allowed`);
+            event.target.value = "";
+            return;
+        }
+
+        const acceptedFiles = maxCount ? files.slice(0, remainingSlots) : files;
+
+        if (maxCount && files.length > acceptedFiles.length) {
+            toast.error(`Only ${remainingSlots} more image(s) allowed`);
+        }
+
+        setFilesArray((prev) => [...prev, ...acceptedFiles]);
+
+        const previews = acceptedFiles.map((file) => URL.createObjectURL(file));
 
         setConfig((prev) => ({
             ...prev,
@@ -119,7 +117,7 @@ export default function OverviewController() {
         }));
 
         event.target.value = "";
-        toast.success("Images selected for section");
+        toast.success("Images selected");
     };
 
     const handleSingleImageUpload = (
@@ -147,19 +145,25 @@ export default function OverviewController() {
 
     const removeImageFromSection = (
         index: number,
-        imageKey: "heroImages" | "campusGalleryImages" | "stackImages" | "chromaImages",
-        setFilesArray?: React.Dispatch<React.SetStateAction<File[]>>
+        imageKey: "heroImages" | "campusGalleryImages" | "dailyDarshanImages",
+        setFilesArray: React.Dispatch<React.SetStateAction<File[]>>
     ) => {
         const removed = config[imageKey][index];
-        if (removed && isBlobUrl(removed)) URL.revokeObjectURL(removed);
+
+        if (removed && isBlobUrl(removed)) {
+            URL.revokeObjectURL(removed);
+        }
 
         setConfig((prev) => ({
             ...prev,
             [imageKey]: prev[imageKey].filter((_, i) => i !== index),
         }));
 
-        if (setFilesArray) {
-            setFilesArray((prev) => prev.filter((_, i) => i !== index));
+        if (isBlobUrl(removed)) {
+            const blobIndex =
+                config[imageKey].slice(0, index + 1).filter((src) => isBlobUrl(src)).length - 1;
+
+            setFilesArray((prev) => prev.filter((_, i) => i !== blobIndex));
         }
     };
 
@@ -170,21 +174,15 @@ export default function OverviewController() {
 
             const filterExisting = (urls: string[]) => urls.filter((src) => !isBlobUrl(src));
 
-            formData.append("stackTitle", config.stackTitle);
-            formData.append("stackSubtitle", config.stackSubtitle);
-            formData.append("chromaTitle", config.chromaTitle);
-            formData.append("chromaSubtitle", config.chromaSubtitle);
-
-            formData.append("showStackSection", String(config.showStackSection));
-            formData.append("showChromaSection", String(config.showChromaSection));
-
             formData.append("existingHeroImages", JSON.stringify(filterExisting(config.heroImages)));
             formData.append(
                 "existingCampusGalleryImages",
                 JSON.stringify(filterExisting(config.campusGalleryImages))
             );
-            formData.append("existingStackImages", JSON.stringify(filterExisting(config.stackImages)));
-            formData.append("existingChromaImages", JSON.stringify(filterExisting(config.chromaImages)));
+            formData.append(
+                "existingDailyDarshanImages",
+                JSON.stringify(filterExisting(config.dailyDarshanImages).slice(0, 10))
+            );
 
             if (config.campusImage && !isBlobUrl(config.campusImage)) {
                 formData.append("campusImage", config.campusImage);
@@ -196,8 +194,7 @@ export default function OverviewController() {
 
             heroFiles.forEach((file) => formData.append("heroImages", file));
             campusGalleryFiles.forEach((file) => formData.append("campusGalleryImages", file));
-            stackFiles.forEach((file) => formData.append("stackImages", file));
-            chromaFiles.forEach((file) => formData.append("chromaImages", file));
+            dailyDarshanFiles.forEach((file) => formData.append("dailyDarshanImages", file));
 
             if (logoFile) formData.append("logoImage", logoFile);
             if (campusFile) formData.append("campusImage", campusFile);
@@ -210,6 +207,7 @@ export default function OverviewController() {
             const text = await response.text();
 
             let data: any = null;
+
             try {
                 data = text ? JSON.parse(text) : null;
             } catch {
@@ -224,13 +222,12 @@ export default function OverviewController() {
 
             setHeroFiles([]);
             setCampusGalleryFiles([]);
-            setStackFiles([]);
-            setChromaFiles([]);
+            setDailyDarshanFiles([]);
             setLogoFile(null);
             setCampusFile(null);
 
             window.dispatchEvent(new Event("overview-config-updated"));
-            toast.success("All sections synced and saved successfully!");
+            toast.success("Overview settings saved successfully!");
         } catch (error) {
             console.error(error);
             toast.error(error instanceof Error ? error.message : "Overview settings save failed");
@@ -240,13 +237,24 @@ export default function OverviewController() {
     };
 
     const handleReset = () => {
+        [
+            ...config.heroImages,
+            ...config.campusGalleryImages,
+            ...config.dailyDarshanImages,
+        ].forEach((src) => {
+            if (isBlobUrl(src)) URL.revokeObjectURL(src);
+        });
+
+        if (isBlobUrl(config.logoImage)) URL.revokeObjectURL(config.logoImage);
+        if (isBlobUrl(config.campusImage)) URL.revokeObjectURL(config.campusImage);
+
         setConfig(defaultConfig);
         setHeroFiles([]);
         setCampusGalleryFiles([]);
-        setStackFiles([]);
-        setChromaFiles([]);
+        setDailyDarshanFiles([]);
         setLogoFile(null);
         setCampusFile(null);
+
         toast.info("Reset locally. Click Save to update database.");
     };
 
@@ -269,7 +277,7 @@ export default function OverviewController() {
                     </p>
                     <h1 className="mt-2 text-3xl font-black text-red-800">Overview Controller</h1>
                     <p className="mt-2 text-sm font-semibold text-red-700/70">
-                        Landing page na sections ni images ane titles alagalag control karo.
+                        Landing page ni main images control karo.
                     </p>
                 </div>
 
@@ -350,113 +358,29 @@ export default function OverviewController() {
                     </div>
                 </section>
 
-                <SectionEditor
-                    title="3. Stack Card Gallery Section"
-                    active={config.showStackSection}
-                    onToggle={() => updateField("showStackSection", !config.showStackSection)}
-                >
-                    <TextInput
-                        label="Stack Main Title"
-                        value={config.stackTitle}
-                        onChange={(val) => updateField("stackTitle", val)}
-                    />
-
-                    <TextInput
-                        label="Stack Subtitle"
-                        value={config.stackSubtitle}
-                        onChange={(val) => updateField("stackSubtitle", val)}
-                    />
+                <section className="rounded-2xl border border-red-100 bg-red-50/40 p-5 xl:col-span-2">
+                    <h2 className="mb-4 border-b border-red-100 pb-2 text-lg font-black text-red-800">
+                        3. Daily Darshan Section
+                    </h2>
 
                     <MultiImageUploadView
-                        label="Stack Rotating Cards Images"
-                        images={config.stackImages}
-                        onUpload={(e) => handleMultiImageUpload(e, "stackImages", setStackFiles)}
-                        onRemove={(idx) => removeImageFromSection(idx, "stackImages", setStackFiles)}
+                        label={`Daily Darshan Images (${config.dailyDarshanImages.length}/10)`}
+                        images={config.dailyDarshanImages}
+                        onUpload={(e) =>
+                            handleMultiImageUpload(
+                                e,
+                                "dailyDarshanImages",
+                                setDailyDarshanFiles,
+                                10
+                            )
+                        }
+                        onRemove={(idx) =>
+                            removeImageFromSection(idx, "dailyDarshanImages", setDailyDarshanFiles)
+                        }
                     />
-                </SectionEditor>
-
-                <section className="rounded-2xl border border-red-100 bg-white p-5 shadow-sm xl:col-span-2">
-                    <div className="mb-4 flex items-center justify-between gap-3 border-b border-red-100 pb-2">
-                        <h2 className="text-lg font-black text-red-800">
-                            4. Chroma Spotlight Highlights
-                        </h2>
-
-                        <ToggleButton
-                            active={config.showChromaSection}
-                            onClick={() => updateField("showChromaSection", !config.showChromaSection)}
-                        />
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <TextInput
-                            label="Chroma Card Title"
-                            value={config.chromaTitle}
-                            onChange={(val) => updateField("chromaTitle", val)}
-                        />
-
-                        <TextInput
-                            label="Chroma Card Subtitle"
-                            value={config.chromaSubtitle}
-                            onChange={(val) => updateField("chromaSubtitle", val)}
-                        />
-
-                        <div className="md:col-span-2">
-                            <MultiImageUploadView
-                                label="Chroma Grid Layout Images"
-                                images={config.chromaImages}
-                                onUpload={(e) => handleMultiImageUpload(e, "chromaImages", setChromaFiles)}
-                                onRemove={(idx) => removeImageFromSection(idx, "chromaImages", setChromaFiles)}
-                            />
-                        </div>
-                    </div>
                 </section>
             </div>
         </div>
-    );
-}
-
-function SectionEditor({
-    title,
-    active,
-    onToggle,
-    children,
-}: {
-    title: string;
-    active: boolean;
-    onToggle: () => void;
-    children: React.ReactNode;
-}) {
-    return (
-        <section className="rounded-2xl border border-red-100 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex items-center justify-between gap-3 border-b border-red-50 pb-2">
-                <h2 className="text-lg font-black text-red-800">{title}</h2>
-                <ToggleButton active={active} onClick={onToggle} />
-            </div>
-            <div className="grid gap-4">{children}</div>
-        </section>
-    );
-}
-
-function TextInput({
-    label,
-    value,
-    onChange,
-}: {
-    label: string;
-    value: string;
-    onChange: (value: string) => void;
-}) {
-    return (
-        <label className="block">
-            <span className="mb-2 block text-xs font-black uppercase tracking-wider text-red-800">
-                {label}
-            </span>
-            <input
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="h-12 w-full rounded-xl border border-red-100 bg-white px-4 text-sm font-bold text-red-900 outline-none transition-all focus:border-red-400 focus:ring-4 focus:ring-red-100"
-            />
-        </label>
     );
 }
 
@@ -524,7 +448,7 @@ function MultiImageUploadView({
                 </label>
 
                 {images.length > 0 && (
-                    <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
+                    <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
                         {images.map((src, index) => (
                             <div
                                 key={`${src}-${index}`}
@@ -544,20 +468,5 @@ function MultiImageUploadView({
                 )}
             </div>
         </div>
-    );
-}
-
-function ToggleButton({ active, onClick }: { active: boolean; onClick: () => void }) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className={`flex h-10 items-center gap-2 rounded-xl px-4 text-xs font-black uppercase tracking-wider transition-all active:scale-95 ${
-                active ? "bg-red-800 text-white" : "border border-red-200 bg-white text-red-800"
-            }`}
-        >
-            {active ? <FaEye /> : <FaEyeSlash />}
-            {active ? "Show" : "Hide"}
-        </button>
     );
 }

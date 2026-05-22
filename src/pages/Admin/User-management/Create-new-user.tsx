@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaUser, FaSave, FaGraduationCap, FaHashtag } from "react-icons/fa";
+import {
+    FaUser,
+    FaSave,
+    FaGraduationCap,
+    FaHashtag,
+    FaCamera,
+    FaTimes,
+    FaBuilding,
+} from "react-icons/fa";
 import { toast } from "sonner";
 import Input from "../../../Components/commen/Input";
 import SGDropdown from "../../../Components/commen/SGDropdown";
@@ -18,64 +26,83 @@ interface DeptOption {
 }
 
 export default function CreateNewUser() {
-    const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
     
-    const deptIdFromUrl = searchParams.get("dept_id") || ""; 
+    const [searchParams] = useSearchParams();
+    const imageFromUrl = searchParams.get("image") || "";
+    const navigate = useNavigate();
+
+    const deptIdFromUrl = searchParams.get("dept_id") || "";
     const nameFromUrl = searchParams.get("name") || "";
     const suidFromUrl = searchParams.get("suid") || "";
 
-    const cleanSUID = suidFromUrl.replace(/[^0-9]/g, "");
-    const isRedirectedFromList = nameFromUrl !== ""; 
-
     const loggedInUserRole = localStorage.getItem("user_role") || "";
     const userRaw = localStorage.getItem("user");
-    
+
     let userId: number | null = null;
-    let userDepartmentId = "0"; 
+    let userDepartmentId = "0";
 
     if (userRaw) {
         try {
             const parsed = JSON.parse(userRaw);
             userId = parsed.id ? Number(parsed.id) : null;
-            userDepartmentId = parsed.department_id !== undefined ? parsed.department_id.toString() : "0";
-        } catch (e) {
-            console.error(e);
+            userDepartmentId = parsed.department_id !== undefined ? String(parsed.department_id) : "0";
+        } catch (error) {
+            console.error(error);
         }
     }
 
-    const isMainSuperAdmin = userId === 123098 || loggedInUserRole.trim().toUpperCase() === "SUPER_ADMIN";
+    const isMainSuperAdmin =
+        userId === 123098 || loggedInUserRole.trim().toUpperCase() === "SUPER_ADMIN";
+
+    const isRedirectedFromList = Boolean(nameFromUrl || suidFromUrl || deptIdFromUrl);
 
     const [formData, setFormData] = useState({
         fullName: nameFromUrl,
         username: "",
-        std: "",
-        SUID: cleanSUID || suidFromUrl,
         password: "",
-        role: isRedirectedFromList ? "user" : "", 
-        department: isRedirectedFromList ? deptIdFromUrl : (isMainSuperAdmin ? "" : userDepartmentId)
+        suid: suidFromUrl,
+        rollNumber: suidFromUrl.replace(/[^0-9]/g, ""),
+        std: "",
+        role: isRedirectedFromList ? "user" : "",
+        department: isRedirectedFromList ? deptIdFromUrl : "",
     });
 
-    const [selectedFile] = useState<File | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [previewImage, setPreviewImage] = useState(imageFromUrl);
+
     const [roleOptions, setRoleOptions] = useState<RoleOption[]>([]);
     const [dbDepartments, setDbDepartments] = useState<DeptOption[]>([]);
-    const [loadingRoles, setLoadingRoles] = useState<boolean>(true);
+    const [loadingRoles, setLoadingRoles] = useState(true);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [isCreating, setIsCreating] = useState(false);
+
+    useEffect(() => {
+        return () => {
+            if (previewImage) URL.revokeObjectURL(previewImage);
+        };
+    }, [previewImage]);
+
+    const isDepartmentHeadSelected = () => {
+        const role = formData.role.trim().toLowerCase();
+        return role === "department main" || role === "department_main" || role === "head1029";
+    };
 
     useEffect(() => {
         const fetchLiveDepartments = async () => {
             try {
-                let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-                if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
+                let API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+                if (API_URL.endsWith("/")) API_URL = API_URL.slice(0, -1);
 
                 const response = await fetch(`${API_URL}/auth/departments`);
                 const data = await response.json();
+
                 if (data.success && data.departments) {
-                    const formatted = data.departments.map((d: any) => ({
-                        value: String(d.id),
-                        label: d.name
-                    }));
-                    setDbDepartments(formatted);
+                    setDbDepartments(
+                        data.departments.map((department: any) => ({
+                            value: String(department.id),
+                            label: department.name || department.dept_name,
+                        }))
+                    );
                 }
             } catch (error) {
                 console.error(error);
@@ -84,42 +111,45 @@ export default function CreateNewUser() {
 
         const fetchRolesForDropdown = async () => {
             if (isRedirectedFromList) {
-                setRoleOptions([{ value: "user", label: "User" }]);
+                setRoleOptions([]);
                 setLoadingRoles(false);
                 return;
             }
 
             try {
-                let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-                if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
+                let API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+                if (API_URL.endsWith("/")) API_URL = API_URL.slice(0, -1);
 
                 const response = await fetch(`${API_URL}/auth/role/alldata`);
-                if (!response.ok) throw new Error("Failed to load roles");
-                
                 const data = await response.json();
 
                 if (data.success && data.roles) {
-                    let dynamicOptions = data.roles.map((role: any) => ({
-                        value: role.role_code.trim().toLowerCase(),
-                        label: role.role_name.trim()
-                    }));
+                    const hiddenRoleCodes = ["user"];
+
+                    let options = data.roles
+                        .map((role: any) => ({
+                            value: role.role_code.trim().toLowerCase(),
+                            label: role.role_name.trim(),
+                        }))
+                        .filter((role: RoleOption) => !hiddenRoleCodes.includes(role.value));
 
                     if (!isMainSuperAdmin) {
-                        dynamicOptions = dynamicOptions.filter((r: any) => r.value === "user");
+                        options = [];
                     }
 
-                    setRoleOptions(dynamicOptions);
+                    setRoleOptions(options);
                 }
             } catch (error) {
                 console.error(error);
-                if (isMainSuperAdmin) {
-                    setRoleOptions([
-                        { value: "admin", label: "Admin" },
-                        { value: "user", label: "User" }
-                    ]);
-                } else {
-                    setRoleOptions([{ value: "user", label: "User" }]);
-                }
+
+                setRoleOptions(
+                    isMainSuperAdmin
+                        ? [
+                            { value: "admin", label: "Admin" },
+                            { value: "department main", label: "Department Main" },
+                        ]
+                        : []
+                );
             } finally {
                 setLoadingRoles(false);
             }
@@ -127,73 +157,115 @@ export default function CreateNewUser() {
 
         fetchLiveDepartments();
         fetchRolesForDropdown();
-    }, [isRedirectedFromList, isMainSuperAdmin]);
+    }, [isMainSuperAdmin, isRedirectedFromList]);
 
-    const isDepartmentHeadSelected = () => {
-        if (!formData.role) return false;
-        const cleanRole = formData.role.trim().toLowerCase();
-        return cleanRole === "head1029" || cleanRole === "department main";
-    };
+    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
 
-    const validateForm = (): boolean => {
-        const newErrors: { [key: string]: string } = {};
-        if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
-        if (!formData.username.trim()) newErrors.username = "Username is required";
-        if (!formData.password.trim()) newErrors.password = "Password is required";
-        if (!formData.std.trim()) newErrors.std = "Standard (STD) is required";
-        if (!formData.SUID.toString().trim()) newErrors.SUID = "Roll/SUID number is required";
-        if (!formData.role) newErrors.role = "Please select a user role";
-        
-        if (isDepartmentHeadSelected() && !formData.department) {
-            newErrors.department = "Please select a department for the Department Head";
-        } else if (!isDepartmentHeadSelected() && !formData.department) {
-            formData.department = isMainSuperAdmin ? "0" : userDepartmentId;
+        if (!file.type.startsWith("image/")) {
+            toast.error("Please select only image file");
+            return;
         }
 
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        if (previewImage) URL.revokeObjectURL(previewImage);
+
+        setSelectedFile(file);
+        setPreviewImage(URL.createObjectURL(file));
+        event.target.value = "";
     };
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const removeSelectedImage = () => {
+        if (previewImage) URL.revokeObjectURL(previewImage);
+        setPreviewImage("");
+        setSelectedFile(null);
+    };
+
+    const validateForm = () => {
+        const nextErrors: { [key: string]: string } = {};
+
+        if (!formData.fullName.trim()) nextErrors.fullName = "Full name is required";
+        if (!formData.username.trim()) nextErrors.username = "Username is required";
+        if (!formData.password.trim()) nextErrors.password = "Password is required";
+        if (!formData.suid.trim()) nextErrors.suid = "SUID is required";
+        if (!formData.rollNumber.trim()) nextErrors.rollNumber = "Roll number is required";
+        if (!formData.std.trim()) nextErrors.std = "Standard is required";
+
+        if (!isRedirectedFromList && !formData.role) {
+            nextErrors.role = "Role is required";
+        }
+
+        if (isDepartmentHeadSelected() && !formData.department) {
+            nextErrors.department = "Department is required for Department Head";
+        }
+
+        setErrors(nextErrors);
+        return Object.keys(nextErrors).length === 0;
+    };
+
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        if (isCreating) return;
+
         if (!validateForm()) {
             toast.error("Please fill all required fields.");
             return;
         }
 
-        try {
-            let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-            if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
+        setIsCreating(true);
+        await wait(150);
 
+        try {
+            let API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+            if (API_URL.endsWith("/")) API_URL = API_URL.slice(0, -1);
+
+            const finalRole = isRedirectedFromList ? "user" : formData.role;
+            const finalDepartment = isRedirectedFromList
+                ? deptIdFromUrl
+                : isDepartmentHeadSelected()
+                    ? formData.department
+                    : "5";
             const dataToSend = new FormData();
-            dataToSend.append("fullName", formData.fullName);
-            dataToSend.append("username", formData.username);
+            dataToSend.append("fullName", formData.fullName.trim());
+            dataToSend.append("username", formData.username.trim());
             dataToSend.append("password", formData.password);
-            dataToSend.append("std", formData.std);
-            dataToSend.append("rollNumber", formData.SUID);
-            dataToSend.append("userRole", formData.role);
-            dataToSend.append("department", formData.department); 
-            
-            if (selectedFile) dataToSend.append("image", selectedFile);
+            dataToSend.append("suid", formData.suid.trim());
+            dataToSend.append("rollNumber", formData.rollNumber.trim());
+            dataToSend.append("std", formData.std.trim());
+            dataToSend.append("userRole", finalRole);
+            dataToSend.append("department", finalDepartment);
+
+            if (selectedFile) {
+                dataToSend.append("image", selectedFile);
+            } else if (imageFromUrl) {
+                dataToSend.append("existingImageUrl", imageFromUrl);
+            }
 
             const response = await fetch(`${API_URL}/create/user`, {
-                method: 'POST',
-                body: dataToSend
+                method: "POST",
+                body: dataToSend,
             });
 
             const data = await response.json();
-            if (data.success) {
-                toast.success(`User created successfully! 🎉`);
 
-                setFormData({ 
-                    fullName: "", 
-                    username: "", 
-                    std: "", 
-                    password: "", 
-                    SUID: "", 
-                    role: "", 
-                    department: isMainSuperAdmin ? "" : userDepartmentId 
+            if (response.ok && data.success) {
+                toast.success("User created successfully!");
+
+                setFormData({
+                    fullName: "",
+                    username: "",
+                    password: "",
+                    suid: "",
+                    rollNumber: "",
+                    std: "",
+                    role: "",
+                    department: "",
                 });
+
+                removeSelectedImage();
 
                 if (isRedirectedFromList) {
                     navigate(`/deshbord/user-lists?dept_id=${encodeURIComponent(deptIdFromUrl)}`);
@@ -202,44 +274,148 @@ export default function CreateNewUser() {
                 toast.error(data.message || "Failed to create user");
             }
         } catch (error) {
+            console.error(error);
             toast.error("Server is offline or unreachable");
+        } finally {
+            setIsCreating(false);
         }
     };
 
     return (
-        <div className="w-full flex flex-col items-center p-4 md:p-8 select-none">
-            <div className="text-center mb-8">
-                <h1 className="text-3xl font-black text-red-950 uppercase tracking-tight">Create New Sevak / User</h1>
-                <div className="h-1.5 w-16 bg-red-800 mx-auto mt-3 rounded-full" />
+        <div className="flex w-full select-none flex-col items-center p-4 md:p-8">
+            <div className="mb-8 text-center">
+                <h1 className="text-3xl font-black uppercase tracking-tight text-red-950">
+                    Create New Sevak / User
+                </h1>
+                <div className="mx-auto mt-3 h-1.5 w-16 rounded-full bg-red-800" />
             </div>
 
-            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-7xl bg-white shadow-md border border-red-50 rounded-[2.5rem] p-6 md:p-10">
+            <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full max-w-7xl rounded-[2.5rem] border border-red-50 bg-white p-6 shadow-md md:p-10"
+            >
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="flex flex-col items-center gap-3 border-b border-gray-100 pb-6">
+                        <label className="relative flex h-32 w-32 cursor-pointer items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed border-red-200 bg-red-50 text-red-800 transition-all hover:bg-red-100">
+                            {previewImage ? (
+                                <img
+                                    src={previewImage}
+                                    alt="Profile preview"
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <div className="flex flex-col items-center gap-2 text-center">
+                                    <FaCamera size={24} />
+                                    <span className="text-[10px] font-black uppercase tracking-wider">
+                                        Select Image
+                                    </span>
+                                </div>
+                            )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <Input label="Full Name" icon={<FaUser />} placeholder="E.g. Prit" value={formData.fullName} onChange={(e: any) => setFormData({ ...formData, fullName: e.target.value })} />
-                        <Input label="Username" icon={<FaUser />} placeholder="E.g. prit-123" value={formData.username} onChange={(e: any) => setFormData({ ...formData, username: e.target.value })} />
-                        <Input type="password" label="Password" icon={<PiPasswordFill />} placeholder="Enter secure password" value={formData.password} onChange={(e: any) => setFormData({ ...formData, password: e.target.value })} />
-                        <Input label="Standard (STD)" icon={<FaGraduationCap />} placeholder="E.g. 12" value={formData.std} onChange={(e: any) => setFormData({ ...formData, std: e.target.value })} />
-                        <Input label="SUID" type="number" icon={<FaHashtag />} placeholder="E.g. 221355" value={formData.SUID} onChange={(e: any) => setFormData({ ...formData, SUID: e.target.value })} />
+                            <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                        </label>
+
+                        <p className="text-xs font-bold text-gray-400">
+                            Profile image optional
+                        </p>
+
+                        {previewImage && (
+                            <button
+                                type="button"
+                                onClick={removeSelectedImage}
+                                className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-xs font-black uppercase text-red-800 hover:bg-red-100"
+                            >
+                                <FaTimes size={10} />
+                                Remove Image
+                            </button>
+                        )}
                     </div>
 
-                    <div>
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                        <Input
+                            label="Full Name"
+                            icon={<FaUser />}
+                            placeholder="E.g. Prit"
+                            value={formData.fullName}
+                            onChange={(event: any) =>
+                                setFormData({ ...formData, fullName: event.target.value })
+                            }
+                        />
+
+                        <Input
+                            label="Username"
+                            icon={<FaUser />}
+                            placeholder="E.g. prit-123"
+                            value={formData.username}
+                            onChange={(event: any) =>
+                                setFormData({ ...formData, username: event.target.value })
+                            }
+                        />
+
+                        <Input
+                            type="password"
+                            label="Password"
+                            icon={<PiPasswordFill />}
+                            placeholder="Enter secure password"
+                            value={formData.password}
+                            onChange={(event: any) =>
+                                setFormData({ ...formData, password: event.target.value })
+                            }
+                        />
+
+                        <Input
+                            label="SUID"
+                            icon={<FaHashtag />}
+                            placeholder="E.g. SUID-1001"
+                            value={formData.suid}
+                            onChange={(event: any) =>
+                                setFormData({ ...formData, suid: event.target.value })
+                            }
+                        />
+
+                        <Input
+                            label="Roll Number"
+                            type="number"
+                            icon={<FaHashtag />}
+                            placeholder="E.g. 221355"
+                            value={formData.rollNumber}
+                            onChange={(event: any) =>
+                                setFormData({ ...formData, rollNumber: event.target.value })
+                            }
+                        />
+
+                        <Input
+                            label="Standard (STD)"
+                            icon={<FaGraduationCap />}
+                            placeholder="E.g. 12"
+                            value={formData.std}
+                            onChange={(event: any) =>
+                                setFormData({ ...formData, std: event.target.value })
+                            }
+                        />
+                    </div>
+
+                    {!isRedirectedFromList && (
                         <SGDropdown
                             label={loadingRoles ? "Loading system roles..." : "Select Role"}
                             name="role"
-                            value={formData.role} 
-                            onChange={(e: { target: { name: string; value: string } }) => {
-                                setFormData({ ...formData, role: e.target.value, department: isMainSuperAdmin ? "" : userDepartmentId });
+                            value={formData.role}
+                            onChange={(event: { target: { name: string; value: string } }) => {
+                                setFormData({
+                                    ...formData,
+                                    role: event.target.value,
+                                    department: "",
+                                });
                             }}
                             options={roleOptions}
                             error={errors.role}
                         />
-                    </div>
+                    )}
 
                     <AnimatePresence>
-                        {(isMainSuperAdmin && isDepartmentHeadSelected()) && (
-                            <motion.div 
+                        {!isRedirectedFromList && isDepartmentHeadSelected() && (
+                            <motion.div
                                 initial={{ opacity: 0, height: 0, y: -10 }}
                                 animate={{ opacity: 1, height: "auto", y: 0 }}
                                 exit={{ opacity: 0, height: 0, y: -10 }}
@@ -250,8 +426,8 @@ export default function CreateNewUser() {
                                     label="Select Department"
                                     name="department"
                                     value={formData.department}
-                                    onChange={(e: { target: { name: string; value: string } }) => {
-                                        setFormData({ ...formData, department: e.target.value });
+                                    onChange={(event: { target: { name: string; value: string } }) => {
+                                        setFormData({ ...formData, department: event.target.value });
                                     }}
                                     options={dbDepartments}
                                     error={errors.department}
@@ -260,12 +436,31 @@ export default function CreateNewUser() {
                         )}
                     </AnimatePresence>
 
-                    <div className="pt-4 border-t border-gray-100 flex justify-end">
-                        <button type="submit" className="w-full md:w-auto px-8 h-14 rounded-2xl bg-red-800 hover:bg-red-900 text-white font-black text-base flex items-center justify-center gap-3 shadow-md cursor-pointer">
-                            <FaSave className="text-lg" /> CREATE USER
+                    {isRedirectedFromList && (
+                        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-bold text-red-900">
+                            This profile will be created as a User for the selected department.
+                        </div>
+                    )}
+
+                    <div className="flex justify-end border-t border-gray-100 pt-4">
+                        <button
+                            type="submit"
+                            disabled={isCreating}
+                            className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-red-800 px-8 text-base font-black text-white shadow-md transition-all hover:bg-red-900 active:scale-95 disabled:cursor-not-allowed disabled:opacity-75 md:w-auto"
+                        >
+                            {isCreating ? (
+                                <>
+                                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                                    CREATING...
+                                </>
+                            ) : (
+                                <>
+                                    <FaSave className="text-lg" />
+                                    CREATE USER
+                                </>
+                            )}
                         </button>
                     </div>
-
                 </form>
             </motion.div>
         </div>
