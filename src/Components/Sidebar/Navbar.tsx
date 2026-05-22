@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { IoMdArrowDroprightCircle } from "react-icons/io";
-import { IoLogOut } from "react-icons/io5";
-// 🎯 FaMusic આઇકોન અહીં ઇમ્પોર્ટ કર્યો છે
-import { FaUserTie, FaPlus, FaList, FaBuilding, FaImages, FaSlidersH, FaMusic } from "react-icons/fa";
+import { SiStreamrunners } from "react-icons/si";
+import { FaUserTie, FaPlus, FaList, FaBuilding, FaImages, FaSlidersH, FaMusic, FaQuoteLeft, FaWater, FaEye } from "react-icons/fa";
 import { FaClipboardUser } from "react-icons/fa6";
 import Dropdown from "./DropDown";
 import LinkButton from "../commen/Link-button";
@@ -224,7 +223,25 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
                             </Link>
                         </Dropdown>
                     )}
-                </div>
+                </div>{isMainSuperAdmin && (
+    <Dropdown
+        icon={<FaQuoteLeft />}
+        arrowicon={<IoMdArrowDroprightCircle />}
+        text={!isCollapsed ? "Daily Quotes" : ""}
+        isOpen={openId === "admin-4"}
+        onToggle={() => handleToggle("admin-4")}
+        isCollapsed={isCollapsed}
+    >
+        <Link to="/deshbord/amrut-nu-aachaman" className="flex items-center gap-2 w-full text-left p-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-red-900 hover:bg-red-800/10 transition-colors">
+            <FaWater className="text-red-800/70 text-base shrink-0" />
+            <span>Amrut nu Aachaman</span>
+        </Link>
+        <Link to="/deshbord/daily-darshan" className="flex items-center gap-2 w-full text-left p-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-red-900 hover:bg-red-800/10 transition-colors">
+            <FaEye className="text-red-800/70 text-base shrink-0" />
+            <span>Daily Darshan</span>
+        </Link>
+    </Dropdown>
+)}
 
                 <div className="w-full flex flex-col gap-2">
                     <LinkButton To="/deshbord" text="Dashboard" icon={<GoHomeFill />} />
@@ -268,9 +285,9 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
             <div className="absolute bottom-0 left-0 p-2 w-full flex flex-col gap-2">
                 <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 text-xs font-black uppercase tracking-wider text-red-100 hover:bg-red-900/40 p-3 rounded-xl transition-all cursor-pointer"
+                    className="w-full flex items-center gap-3 text-xs font-black uppercase tracking-wider text-red-100 hover:bg-white/20 p-3 rounded-xl transition-all cursor-pointer"
                 >
-                    <IoLogOut className="text-xl shrink-0" />
+                    <SiStreamrunners className="text-xl shrink-0" />
                     {!isCollapsed && <span>Logout</span>}
                 </button>
             </div>
