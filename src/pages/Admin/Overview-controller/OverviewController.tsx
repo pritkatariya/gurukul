@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FaImage, FaRotateLeft, FaTrash } from "react-icons/fa6";
+import { IoIosImages } from "react-icons/io";
 
 type OverviewConfig = {
     heroImages: string[];
@@ -260,32 +261,65 @@ export default function OverviewController() {
 
     if (loading) {
         return (
-            <div className="flex min-h-full items-center justify-center rounded-2xl bg-white p-6">
-                <p className="text-sm font-black uppercase tracking-wider text-red-800">
-                    Loading overview controller...
-                </p>
+            <div className="flex min-h-full items-center justify-center rounded-3xl bg-linear-to-br from-red-50 via-white to-red-100 p-8 shadow-inner">
+                <div className="text-center">
+                    <p className="text-sm font-black uppercase tracking-[0.3em] text-gray-800">
+                        Loading overview controller...
+                    </p>
+                    <p className="mt-2 text-xs font-medium text-gray-700/70">
+                        Fetching hero, campus, and Daily Darshan assets.
+                    </p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="w-full min-h-full rounded-2xl bg-white p-4 md:p-6">
-            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <p className="text-xs font-black uppercase tracking-[0.25em] text-red-700">
-                        Super Admin
-                    </p>
-                    <h1 className="mt-2 text-3xl font-black text-red-800">Overview Controller</h1>
-                    <p className="mt-2 text-sm font-semibold text-red-700/70">
-                        Landing page ni main images control karo.
-                    </p>
+        <div className="w-full min-h-full rounded-4xl bg-white p-5 shadow-sm md:p-7">
+            <div className="mb-6 gap-4 w-full xl:items-start justify-between flex flex-col">
+                <div className=" w-full">
+                    <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-[11px] font-black uppercase tracking-[0.3em] text-gray-950">
+                        Overview Manager
+                    </span>
+                    <div className="mt-4 max-w-2xl">
+                        <h1 className="text-3xl font-black text-gray-700 sm:text-4xl">
+                            Homepage Image Control
+                        </h1>
+                        <p className="mt-3 text-sm font-medium text-red-600/80 sm:text-base">
+                            Configure the landing page visual sections, upload hero banners, campus imagery, and Daily Darshan highlights with confidence.
+                        </p>
+                    </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="grid sm:flex sm:justify-center sm:items-center gap-3 my-5 sm:grid-cols-2 xl:grid-cols-1">
+                    <div className="rounded-3xl border border-red-100  p-4 shadow-sm">
+                        <p className="text-xs font-black uppercase tracking-[0.2em]">
+                            Hero Images
+                        </p>
+                        <p className="mt-2 text-2xl font-black">{config.heroImages.length}</p>
+                    </div>
+                    <div className="rounded-3xl border border-red-100  p-4 shadow-sm">
+                        <p className="text-xs font-black uppercase tracking-[0.2em]">
+                            Darshan Items
+                        </p>
+                        <p className="mt-2 text-2xl font-black">{config.dailyDarshanImages.length}/10</p>
+                    </div>
+                    <div className="rounded-3xl border border-red-100 p-4 shadow-sm">
+                        <p className="text-xs font-black uppercase tracking-[0.2em]">
+                            Campus Gallery
+                        </p>
+                        <p className="mt-2 text-2xl font-black">{config.campusGalleryImages.length}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <IoIosImages size={24} className="text-gray-900 mx-5" />
+                <div className="flex flex-col gap-3 sm:flex-row">
                     <button
                         type="button"
                         onClick={handleReset}
-                        className="flex h-11 items-center gap-2 rounded-xl border border-red-200 bg-white px-4 text-sm font-black text-red-800 shadow-sm transition-all hover:bg-red-50 active:scale-95"
+                        className="inline-flex h-12 items-center justify-center gap-2 rounded-3xl border border-red-200 bg-white px-5 text-sm font-black text-gray-800 shadow-sm transition-all hover:bg-red-50 active:scale-95"
                     >
                         <FaRotateLeft /> Reset
                     </button>
@@ -294,7 +328,7 @@ export default function OverviewController() {
                         type="button"
                         onClick={handleSave}
                         disabled={saving}
-                        className="flex h-11 items-center gap-2 rounded-xl bg-red-800 px-5 text-sm font-black text-white shadow-md transition-all hover:bg-red-700 active:scale-95 disabled:opacity-60"
+                        className="inline-flex h-12 items-center justify-center gap-2 rounded-3xl bg-red-900 px-5 text-sm font-black text-white shadow-lg transition-all hover:bg-red-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {saving ? "Saving..." : "Save Settings"}
                     </button>
@@ -302,21 +336,24 @@ export default function OverviewController() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                <section className="rounded-2xl border border-red-100 bg-red-50/40 p-5">
-                    <h2 className="mb-4 border-b border-red-100 pb-2 text-lg font-black text-red-800">
-                        1. Hero Slider Section
-                    </h2>
+                <section className="rounded-[28px] p-5 shadow-sm">
+                    <div className="mb-5 flex flex-col gap-2">
+                        <h2 className="text-xl font-black">Hero Slider</h2>
+                        <p className="text-sm font-medium">
+                            Upload the primary homepage banners users will see on the landing page.
+                        </p>
+                    </div>
 
-                    <div className="grid gap-4">
+                    <div className="grid gap-5">
                         <MultiImageUploadView
-                            label="Hero Background Banner Images"
+                            label="Hero Banner Images"
                             images={config.heroImages}
                             onUpload={(e) => handleMultiImageUpload(e, "heroImages", setHeroFiles)}
                             onRemove={(idx) => removeImageFromSection(idx, "heroImages", setHeroFiles)}
                         />
 
                         <ImageInput
-                            label="Gurukul Navbar / Main Logo"
+                            label="Navbar / Main Logo"
                             value={config.logoImage}
                             onUpload={(e) => handleSingleImageUpload(e, "logo")}
                             onClear={() => {
@@ -328,14 +365,20 @@ export default function OverviewController() {
                     </div>
                 </section>
 
-                <section className="rounded-2xl border border-red-100 bg-red-50/40 p-5">
-                    <h2 className="mb-4 border-b border-red-100 pb-2 text-lg font-black text-red-800">
-                        2. Campus Info Section
-                    </h2>
+                <section className="rounded-[28px]  p-5 shadow-sm">
+                    <div className="mb-5 flex flex-col gap-2">
+                        <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.25em]">
+                            2
+                        </div>
+                        <h2 className="text-xl font-black text-gray-900">Campus Section</h2>
+                        <p className="text-sm font-medium text-gray-700/80">
+                            Set the campus hero image and supporting gallery visuals.
+                        </p>
+                    </div>
 
-                    <div className="grid gap-4">
+                    <div className="grid gap-5">
                         <ImageInput
-                            label="Main Campus Large Image"
+                            label="Campus Hero Image"
                             value={config.campusImage}
                             onUpload={(e) => handleSingleImageUpload(e, "campus")}
                             onClear={() => {
@@ -346,7 +389,7 @@ export default function OverviewController() {
                         />
 
                         <MultiImageUploadView
-                            label="Campus Side Grid Images"
+                            label="Campus Gallery Images"
                             images={config.campusGalleryImages}
                             onUpload={(e) =>
                                 handleMultiImageUpload(e, "campusGalleryImages", setCampusGalleryFiles)
@@ -358,10 +401,16 @@ export default function OverviewController() {
                     </div>
                 </section>
 
-                <section className="rounded-2xl border border-red-100 bg-red-50/40 p-5 xl:col-span-2">
-                    <h2 className="mb-4 border-b border-red-100 pb-2 text-lg font-black text-red-800">
-                        3. Daily Darshan Section
-                    </h2>
+                <section className="rounded-[28px] p-5 shadow-sm xl:col-span-2">
+                    <div className="mb-5 flex flex-col gap-2">
+                        <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.25em]">
+                            3
+                        </div>
+                        <h2 className="text-xl font-black text-gray-900">Daily Darshan</h2>
+                        <p className="text-sm font-medium text-gray-700/80">
+                            Upload up to 10 Daily Darshan cards for the homepage carousel.
+                        </p>
+                    </div>
 
                     <MultiImageUploadView
                         label={`Daily Darshan Images (${config.dailyDarshanImages.length}/10)`}
@@ -396,28 +445,37 @@ function ImageInput({
     onClear: () => void;
 }) {
     return (
-        <div>
-            <span className="mb-2 block text-xs font-black uppercase tracking-wider text-red-800">
-                {label}
-            </span>
+        <div className="rounded-3xl border border-red-100 bg-white p-5 shadow-sm">
+            <div className="mb-4 flex items-center justify-between gap-3">
+                <span className="text-xs font-black uppercase tracking-[0.25em] text-gray-800">
+                    {label}
+                </span>
+                <span className="rounded-full bg-red-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-700">
+                    Single image
+                </span>
+            </div>
 
-            <div className="flex flex-col gap-3 rounded-xl border border-red-100 bg-white p-3">
-                <label className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-xl bg-red-800 px-4 text-sm font-black text-white transition-all hover:bg-red-700 active:scale-95">
+            <div className="flex flex-col gap-4">
+                <label className="inline-flex h-12 min-h-12 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-red-900 px-4 text-sm font-black text-white shadow-sm transition-all hover:bg-red-800 active:scale-95">
                     <FaImage /> Upload Image
                     <input type="file" accept="image/*" onChange={onUpload} className="hidden" />
                 </label>
 
-                {value && (
-                    <>
-                        <img src={value} alt={label} className="h-40 w-full rounded-xl object-cover" />
+                {value ? (
+                    <div className="group relative overflow-hidden rounded-3xl border border-red-100 bg-red-50">
+                        <img src={value} alt={label} className="h-48 w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
                         <button
                             type="button"
                             onClick={onClear}
-                            className="h-10 rounded-xl border border-red-200 text-sm font-black text-red-800 transition-all hover:bg-red-50"
+                            className="absolute bottom-4 right-4 rounded-full border border-red-200 bg-white/95 px-3 py-2 text-xs font-black uppercase tracking-[0.2em] text-gray-800 shadow-sm transition hover:bg-white"
                         >
-                            Clear Image
+                            Clear
                         </button>
-                    </>
+                    </div>
+                ) : (
+                    <div className="rounded-3xl border border-dashed border-red-200 bg-red-50/80 px-4 py-10 text-center text-sm font-medium text-gray-700/80">
+                        No image selected yet. Use the upload button to add one.
+                    </div>
                 )}
             </div>
         </div>
@@ -436,37 +494,46 @@ function MultiImageUploadView({
     onRemove: (index: number) => void;
 }) {
     return (
-        <div>
-            <span className="mb-2 block text-xs font-black uppercase tracking-wider text-red-800">
-                {label}
-            </span>
+        <div className="rounded-3xl border border-red-100 bg-white p-5 shadow-sm">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <span className="block text-xs font-black uppercase tracking-[0.25em] text-gray-800">
+                        {label}
+                    </span>
+                    <p className="mt-1 text-xs text-gray-700/70">
+                        Upload multiple images for this section and manage previews instantly.
+                    </p>
+                </div>
 
-            <div className="rounded-xl border border-red-100 bg-white p-3">
-                <label className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-xl bg-red-800 px-4 text-sm font-black text-white transition-all hover:bg-red-700 active:scale-95">
-                    <FaImage /> Upload Images
+                <label className="inline-flex h-12 min-h-12 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-red-900 px-4 text-sm font-black text-white shadow-sm transition-all hover:bg-red-800 active:scale-95">
+                    <FaImage /> Add Images
                     <input type="file" accept="image/*" multiple onChange={onUpload} className="hidden" />
                 </label>
-
-                {images.length > 0 && (
-                    <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-                        {images.map((src, index) => (
-                            <div
-                                key={`${src}-${index}`}
-                                className="relative overflow-hidden rounded-xl border border-red-100"
-                            >
-                                <img src={src} alt="Section Media" className="h-24 w-full object-cover" />
-                                <button
-                                    type="button"
-                                    onClick={() => onRemove(index)}
-                                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white text-red-800 shadow-md hover:bg-red-50"
-                                >
-                                    <FaTrash className="text-[10px]" />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                )}
             </div>
+
+            {images.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+                    {images.map((src, index) => (
+                        <div
+                            key={`${src}-${index}`}
+                            className="group relative overflow-hidden rounded-3xl border border-red-100 bg-red-50 transition duration-200 hover:shadow-lg"
+                        >
+                            <img src={src} alt={`Preview ${index + 1}`} className="h-28 w-full object-cover" />
+                            <button
+                                type="button"
+                                onClick={() => onRemove(index)}
+                                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-800 shadow-md transition hover:bg-red-50"
+                            >
+                                <FaTrash className="text-[11px]" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="rounded-3xl border border-dashed border-red-200 bg-red-50/80 px-5 py-10 text-center text-sm font-medium text-gray-700/80">
+                    No images added yet. Click the upload button to start adding visuals.
+                </div>
+            )}
         </div>
     );
 }
