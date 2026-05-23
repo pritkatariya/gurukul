@@ -90,7 +90,7 @@ export default function AmrutnuAchaman() {
       prev === null
         ? 0
         : (prev - 1 + filteredImages.length) %
-          filteredImages.length
+        filteredImages.length
     );
   }, [filteredImages.length]);
 
@@ -249,7 +249,7 @@ export default function AmrutnuAchaman() {
         ) : (
           <>
             {/* RESULT COUNT */}
-            <div className="mb-8 flex items-center justify-between">
+            <div className="mb-8  flex items-center justify-between">
               <h3 className="text-2xl font-bold text-gray-800">
                 Daily Wisdom Gallery
               </h3>

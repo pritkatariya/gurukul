@@ -22,24 +22,12 @@ import SwaminarayanSceneImg from "../assets/swaminarayan-blessing.png";
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");
 
 type OverviewApiConfig = {
-    heroTitle: string;
-    heroSubtitle: string;
     heroImages: string[];
     logoImage: string;
     campusImage: string;
     campusGalleryImages: string[];
-    stackTitle: string;
-    stackSubtitle: string;
-    stackImages: string[];
-    showStackSection: boolean;
-    domeTitle: string;
-    domeSubtitle: string;
-    domeImages: string[];
-    showDomeSection: boolean;
-    chromaTitle: string;
-    chromaSubtitle: string;
-    chromaImages: string[];
-    showChromaSection: boolean;
+    dailyDarshan?: string[];
+    dailyDarshanImages?: string[];
 };
 
 const fadeUp: Variants = {
@@ -73,7 +61,8 @@ export default function Overview() {
     const [logoDocked, setLogoDocked] = useState(false);
     const [heroIndex, setHeroIndex] = useState(0);
     const [overviewConfig, setOverviewConfig] = useState<OverviewApiConfig | null>(null);
-    const darshanSectionRef = useRef<HTMLDivElement>(null); // આ રિફ છે જે સેક્શનને ઓળખશે
+    const [selectedDarshanImage, setSelectedDarshanImage] = useState<string | null>(null);
+    const darshanSectionRef = useRef<HTMLDivElement>(null);
 
     const { isMusicPlaying, toggleMusic, playMusic } = useMusic();
 
@@ -84,6 +73,8 @@ export default function Overview() {
                 const data = await response.json();
 
                 if (data.success) {
+                    console.log(data.config);
+                    
                     setOverviewConfig(data.config);
                 }
             } catch (error) {
@@ -98,18 +89,6 @@ export default function Overview() {
 
         return () => window.removeEventListener("overview-config-updated", handleUpdated);
     }, []);
-    const dailyDarshanImages = [
-        BhayavadarImg,
-        SwaminarayanSceneImg,
-        BhayavadarImg,
-        SwaminarayanSceneImg,
-        BhayavadarImg,
-        SwaminarayanSceneImg,
-        BhayavadarImg,
-        SwaminarayanSceneImg,
-        BhayavadarImg,
-        SwaminarayanSceneImg,
-    ];
     const scrollToDarshan = () => {
         darshanSectionRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -162,6 +141,15 @@ export default function Overview() {
                 : [BhayavadarImg, SwaminarayanSceneImg],
         [overviewConfig]
     );
+
+    const dailyDarshan = useMemo(() => {
+        if (!overviewConfig) return [BhayavadarImg, SwaminarayanSceneImg];
+
+        if (overviewConfig.dailyDarshan?.length) return overviewConfig.dailyDarshan;
+        if (overviewConfig.dailyDarshanImages?.length) return overviewConfig.dailyDarshanImages;
+
+        return [BhayavadarImg, SwaminarayanSceneImg];
+    }, [overviewConfig]);
 
     useEffect(() => {
         if (loading || heroImages.length === 0) return;
@@ -453,9 +441,11 @@ export default function Overview() {
                             viewport={{ once: true, amount: 0.15 }}
                             className="mt-10 grid w-full grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5"
                         >
-                            {dailyDarshanImages.slice(0, 10).map((src, index) => (
-                                <div
+                            {dailyDarshan.map((src, index) => (
+                                <button
                                     key={`${src}-${index}`}
+                                    type="button"
+                                    onClick={() => setSelectedDarshanImage(src)}
                                     className="group aspect-4/5 w-full overflow-hidden rounded-2xl border border-amber-200/70 bg-white/20 p-1.5 shadow-lg backdrop-blur-sm sm:rounded-3xl"
                                 >
                                     <img
@@ -464,11 +454,34 @@ export default function Overview() {
                                         loading="lazy"
                                         className="h-full w-full rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105 sm:rounded-[1.25rem]"
                                     />
-                                </div>
+                                </button>
                             ))}
                         </motion.div>
                     </div>
                 </section>
+
+                <AnimatePresence>
+                    {selectedDarshanImage && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+                            onClick={() => setSelectedDarshanImage(null)}
+                        >
+                            <motion.img
+                                src={selectedDarshanImage}
+                                alt="Selected Daily Darshan"
+                                initial={{ scale: 0.9 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0.9 }}
+                                transition={{ duration: 0.25 }}
+                                className="max-h-full max-w-full rounded-3xl object-contain shadow-2xl"
+                                onClick={(event) => event.stopPropagation()}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </main>
         </>
     );
