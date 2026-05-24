@@ -38,15 +38,15 @@ export default function DataExplorer({ headers, data, onView, onEdit, onDelete }
             </div>
 
             {viewMode === "table" ? (
-                <div className="overflow-visible rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.015)] w-full bg-white">
-                    <table className="w-full table-auto border-collapse text-left text-sm text-gray-600 overflow-visible">
+                <div className="overflow-x-auto rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.015)] w-full bg-white">
+                    <table className="w-full min-w-[720px] table-auto border-collapse text-left text-sm text-gray-600">
                         <thead className="bg-red-800 text-[11px] font-black uppercase tracking-wider text-amber-50 border-b border-red-900">
                             <tr>
                                 {headers.map((header, index) => (
                                     <th 
                                         key={index} 
                                         scope="col" 
-                                        className={`px-6 py-4.5 ${index === 0 ? "rounded-tl-2xl pl-8" : ""}`}
+                                        className={`px-6 py-4.5 ${index === 0 ? "rounded-tl-2xl pl-8" : ""} ${index >= 3 && index <= 4 ? "hidden sm:table-cell" : ""}`}
                                     >
                                         {header}
                                     </th>
@@ -54,9 +54,9 @@ export default function DataExplorer({ headers, data, onView, onEdit, onDelete }
                                 <th scope="col" className="px-6 py-4.5 text-center w-24 rounded-tr-2xl pr-8">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50 border-t border-gray-50 overflow-visible bg-white">
+                        <tbody className="divide-y divide-gray-50 border-t border-gray-50 bg-white">
                             {data.map((item, rowIndex) => (
-                                <tr key={rowIndex} className="transition-colors duration-150 hover:bg-red-50/20 overflow-visible group">
+                                <tr key={rowIndex} className="transition-colors duration-150 hover:bg-red-50/20 group">
                                     
                                     <td className="px-6 py-4.5 whitespace-nowrap pl-8">
                                         {item.img ? (
@@ -75,23 +75,23 @@ export default function DataExplorer({ headers, data, onView, onEdit, onDelete }
                                         )}
                                     </td>
 
-                                    <td className="px-6 py-4.5 font-black text-gray-800 whitespace-nowrap text-[13px]">
+                                    <td className="px-6 py-4.5 font-black text-gray-800 text-[13px] break-words max-w-[220px]">
                                         {item.name}
                                     </td>
 
-                                    <td className="px-6 py-4.5 font-medium text-gray-700 whitespace-nowrap">
+                                    <td className="px-6 py-4.5 font-medium text-gray-700">
                                         <span className="inline-flex items-center rounded-xl bg-gray-50 px-3 py-1 text-xs font-bold text-gray-700 border border-gray-200/80 shadow-sm uppercase">
                                             {item.role}
                                         </span>
                                     </td>
 
-                                    <td className="px-6 py-4.5 font-medium text-gray-600 whitespace-nowrap">
+                                    <td className="px-6 py-4.5 font-medium text-gray-600 hidden sm:table-cell whitespace-nowrap">
                                         <span className="inline-flex items-center rounded-xl bg-red-50/60 px-3 py-1 text-xs font-bold text-red-800 border border-red-100/50">
                                             {item.dept}
                                         </span>
                                     </td>
 
-                                    <td className="px-6 py-4.5 font-bold text-gray-500 text-xs whitespace-nowrap">
+                                    <td className="px-6 py-4.5 font-bold text-gray-500 text-xs hidden sm:table-cell whitespace-nowrap">
                                         {item.date}
                                     </td>
 
@@ -101,12 +101,14 @@ export default function DataExplorer({ headers, data, onView, onEdit, onDelete }
                                         </span>
                                     </td>
 
-                                    <td className="px-6 py-4.5 text-center whitespace-nowrap overflow-visible pr-8">
-                                        <ActionDropdown 
-                                            onView={() => onView(item.id, item)}
-                                            onEdit={() => onEdit(item.id, item)}
-                                            onDelete={() => onDelete(item.id)}
-                                        />
+                                    <td className="px-6 py-4.5 text-center whitespace-nowrap pr-8 relative overflow-visible">
+                                        <div className="relative z-50 inline-block">
+                                            <ActionDropdown 
+                                                onView={() => onView(item.id, item)}
+                                                onEdit={() => onEdit(item.id, item)}
+                                                onDelete={() => onDelete(item.id)}
+                                            />
+                                        </div>
                                     </td>
 
                                 </tr>
@@ -123,7 +125,7 @@ export default function DataExplorer({ headers, data, onView, onEdit, onDelete }
                         >
                             <div className="absolute top-0 left-0 h-1 w-full bg-red-800 rounded-t-2xl opacity-90 group-hover:opacity-100" />
 
-                            <div className="absolute top-5 right-5 z-10">
+                            <div className="absolute top-5 right-5 z-50">
                                 <ActionDropdown 
                                     onView={() => onView(item.id, item)}
                                     onEdit={() => onEdit(item.id, item)}

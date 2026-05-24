@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { FaUsers, FaUserPlus, FaCheckCircle, FaClock, FaUserCheck } from "react-icons/fa";
+import { FaUsers, FaUserPlus, FaCheckCircle, FaClock, FaUserCheck, FaCrown } from "react-icons/fa";
 import DataExplorer from "../../../Components/commen/DataExplorer.tsx";
 
 interface SeekerRequestType {
@@ -23,6 +23,7 @@ interface OnboardedUserType {
   username: string;
   suid: string;
   image_url: string | null;
+  role?: string | null;
   department_id: string | number;
   joined_date: string;
 }
@@ -79,6 +80,7 @@ export default function StudentListGurukulArt() {
             username: user.username,
             suid: user.suid || "",
             image_url: user.image_url || null,
+            role: user.role || user.role_code || user.role_name || null,
             department_id: user.department_id,
             joined_date: user.joined_date,
           }));
@@ -259,35 +261,89 @@ export default function StudentListGurukulArt() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {onboardedStudents.map((student) => (
-              <div
-                key={student.id}
-                className="flex items-center gap-3 p-3 bg-emerald-50/20 border border-emerald-100/50 rounded-2xl"
-              >
-                {student.image_url ? (
-                  <img
-                    src={student.image_url}
-                    alt="avatar"
-                    className="w-10 h-10 rounded-full object-cover border border-emerald-200"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-emerald-700 text-white flex items-center justify-center font-black text-xs">
-                    {student.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div>
-                  <h4 className="text-xs font-black text-gray-800 uppercase tracking-tight">
-                    {student.name}
-                  </h4>
-                  <p className="text-[10px] text-gray-400 font-bold">
-                    User: {student.username} | SUID: {student.suid} | Joined:{" "}
-                    {student.joined_date
-                      ? new Date(student.joined_date).toLocaleDateString("en-GB")
-                      : ""}
-                  </p>
-                </div>
-              </div>
-            ))}
+            {(() => {
+              const isHead = (s: OnboardedUserType) => {
+                const role = String(s.role || "").trim().toLowerCase();
+                if (!role) return false;
+
+                return (
+                  role === "head1029" ||
+                  role === "department main" ||
+                  role === "department_main" ||
+                  role === "department-head"
+                );
+              };
+
+              const head = onboardedStudents.find(isHead);
+              const others = onboardedStudents.filter((s) => s !== head);
+
+              return (
+                <>
+                  {head && (
+                    <div className="col-span-full rounded-4xl border-2 border-red-200 bg-gradient-to-r from-red-50 via-white to-red-50 p-6 shadow-[0_24px_60px_rgba(220,38,38,0.08)]">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="relative">
+                            {head.image_url ? (
+                              <img src={head.image_url} alt={head.name} className="h-16 w-16 rounded-full object-cover border-2 border-red-200 shadow-xl" />
+                            ) : (
+                              <div className="h-16 w-16 rounded-full bg-red-800 text-white flex items-center justify-center font-black text-2xl shadow-xl">
+                                {head.name.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="absolute -bottom-1 -right-1 rounded-full bg-red-800 p-2 text-white shadow-lg">
+                              <FaCrown size={12} />
+                            </div>
+                          </div>
+
+                          <div className="min-w-0">
+                            <h4 className="text-lg font-black text-red-950 tracking-tight truncate">{head.name}</h4>
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-red-800 border border-red-200">
+                                <FaCrown size={12} /> Department Head
+                              </span>
+                              <span className="text-[11px] text-gray-500">User: {head.username}</span>
+                              <span className="text-[11px] text-gray-400">| SUID: {head.suid}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                          <div className="rounded-3xl bg-white border border-red-100 p-3 shadow-sm">
+                            <p className="text-[10px] uppercase tracking-widest text-gray-400">Role</p>
+                            <p className="mt-2 text-sm font-black text-red-900">{head.role || "Department Head"}</p>
+                          </div>
+                          <div className="rounded-3xl bg-white border border-red-100 p-3 shadow-sm">
+                            <p className="text-[10px] uppercase tracking-widest text-gray-400">Joined</p>
+                            <p className="mt-2 text-sm font-black text-gray-800">{head.joined_date ? new Date(head.joined_date).toLocaleDateString("en-GB") : "—"}</p>
+                          </div>
+                          <div className="rounded-3xl bg-white border border-red-100 p-3 shadow-sm">
+                            <p className="text-[10px] uppercase tracking-widest text-gray-400">Department</p>
+                            <p className="mt-2 text-sm font-black text-gray-800">Gurukul Art</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {others.map((student) => (
+                    <div key={student.id} className="flex items-center gap-3 p-3 bg-emerald-50/20 border border-emerald-100/50 rounded-2xl">
+                      {student.image_url ? (
+                        <img src={student.image_url} alt={student.name} className="w-10 h-10 rounded-full object-cover border border-emerald-200" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-emerald-700 text-white flex items-center justify-center font-black text-xs">
+                          {student.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <h4 className="text-xs font-black text-gray-800 uppercase tracking-tight">{student.name}</h4>
+                        <p className="text-[10px] text-gray-400 font-bold">User: {student.username} | SUID: {student.suid} | Joined: {student.joined_date ? new Date(student.joined_date).toLocaleDateString("en-GB") : ""}</p>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              );
+            })()}
           </div>
         )}
       </div>
