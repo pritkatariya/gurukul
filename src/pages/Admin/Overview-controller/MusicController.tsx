@@ -110,54 +110,64 @@ export default function MusicController() {
     };
 
     return (
-        <div className="w-full flex flex-col gap-6 p-6 bg-slate-50/50 min-h-screen font-sans">
-            {/* હેડર સેક્શન */}
-            <div className="w-full flex justify-between items-center bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-slate-100">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-red-50 text-red-800 rounded-xl shadow-inner">
-                        <FaMusic className="text-xl" />
-                    </div>
-                    <div>
-                        <h1 className="text-xl font-black text-slate-800 tracking-tight">
-                            Gurukul Music Library
-                        </h1>
-                        <p className="text-slate-400 text-xs font-medium mt-0.5">Manage background devotional audio tracks database.</p>
+        <div className="min-h-screen bg-slate-50/50 py-8 font-sans">
+            <div className="mx-auto w-full max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+                {/* હેડર સેક્શન */}
+                <div className="overflow-hidden rounded-4xl border border-slate-100 bg-white/90 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="grid h-14 w-14 place-items-center rounded-3xl bg-red-50 text-red-800 shadow-inner">
+                                <FaMusic className="text-2xl" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+                                    Gurukul Music Library
+                                </h1>
+                                <p className="text-sm font-medium text-slate-500 mt-1">
+                                    Manage devotional audio tracks with a polished upload and preview experience.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600 shadow-sm">
+                            Track count: <span className="text-slate-900">{songs.length}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 {/* ડાબી બાજુ: ન્યુ ટ્રેક ફોર્મ */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100/80">
-                    <h2 className="text-sm font-bold text-slate-700 mb-5 flex items-center gap-2 border-b border-slate-50 pb-3">
-                        <FaPlus className="text-red-700 text-xs" /> Add New Track
+                <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm shadow-slate-200/30">
+                    <h2 className="mb-5 text-sm font-bold uppercase tracking-[0.18em] text-slate-700 flex items-center gap-2 border-b border-slate-100 pb-3">
+                        <FaPlus className="text-red-700 text-base" /> Add New Track
                     </h2>
                     <form onSubmit={handleAddSong} className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-black uppercase tracking-wider text-slate-400">Song Title / Naam</label>
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="title" className="text-[11px] font-black uppercase tracking-wider text-slate-400">Song Title / Naam</label>
                             <input
+                                id="title"
                                 type="text"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 placeholder="e.g., Jay Swaminarayan Mara Vhala"
-                                className="w-full p-3 text-xs font-medium border border-slate-200 rounded-xl focus:outline-none focus:border-red-800 focus:ring-4 focus:ring-red-800/5 transition-all duration-300"
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all duration-300 focus:border-red-800 focus:ring-4 focus:ring-red-800/10"
                                 required
                             />
                         </div>
 
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-black uppercase tracking-wider text-slate-400">Artist / Singer</label>
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="artist" className="text-[11px] font-black uppercase tracking-wider text-slate-400">Artist / Singer</label>
                             <input
+                                id="artist"
                                 type="text"
                                 value={artist}
                                 onChange={(e) => setArtist(e.target.value)}
                                 placeholder="e.g., Gurukul Santos (Optional)"
-                                className="w-full p-3 text-xs font-medium border border-slate-200 rounded-xl focus:outline-none focus:border-red-800 focus:ring-4 focus:ring-red-800/5 transition-all duration-300"
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all duration-300 focus:border-red-800 focus:ring-4 focus:ring-red-800/10"
                             />
                         </div>
 
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-black uppercase tracking-wider text-slate-400">Select Audio File (.mp3)</label>
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="audio-input" className="text-[11px] font-black uppercase tracking-wider text-slate-400">Select Audio File (.mp3)</label>
                             <input
                                 id="audio-input"
                                 type="file"
@@ -165,9 +175,12 @@ export default function MusicController() {
                                 onChange={(e) => {
                                     if (e.target.files) setAudioFile(e.target.files[0]);
                                 }}
-                                className="w-full p-2.5 text-xs font-medium border border-slate-200 rounded-xl bg-slate-50 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-red-50 file:text-red-800 file:cursor-pointer"
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-700 outline-none transition-all duration-300 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-black file:uppercase file:bg-red-50 file:text-red-800 file:cursor-pointer"
                                 required
                             />
+                            {audioFile ? (
+                                <p className="text-[11px] text-slate-500">Selected file: {audioFile.name}</p>
+                            ) : null}
                         </div>
 
                         <Button 
@@ -180,48 +193,51 @@ export default function MusicController() {
                 </div>
 
                 {/* જમણી બાજુ: ટેબલ લિસ્ટ */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100/80">
-                    <div className="flex justify-between items-center mb-5 border-b border-slate-50 pb-3">
-                        <h2 className="text-sm font-bold text-slate-700">Active Database Tracks</h2>
-                        <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full">
+                <div className="lg:col-span-2 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm shadow-slate-200/30">
+                    <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h2 className="text-sm font-bold text-slate-700">Active Database Tracks</h2>
+                            <p className="text-xs text-slate-500 mt-1">Play or remove devotional audio files from the library.</p>
+                        </div>
+                        <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.24em] text-slate-600">
                             Total: {songs.length}
                         </span>
                     </div>
-                    
-                    <div className="w-full overflow-x-auto rounded-xl">
-                        <table className="w-full text-left border-collapse">
+
+                    <div className="overflow-x-auto rounded-3xl border border-slate-100 bg-slate-50/80 p-2">
+                        <table className="min-w-full table-auto text-left">
                             <thead>
-                                <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 text-[10px] uppercase font-black tracking-wider">
+                                <tr className="bg-slate-100 text-[10px] uppercase tracking-[0.3em] text-slate-500">
                                     <th className="py-3 px-4">Title / Naam</th>
                                     <th className="py-3 px-4">Artist</th>
                                     <th className="py-3 px-4">Player Preview</th>
                                     <th className="py-3 px-4 text-center">Action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100/60 text-xs text-slate-600 font-medium">
+                            <tbody className="divide-y divide-slate-200 text-sm text-slate-600">
                                 {songs.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="text-center py-12 text-slate-400">
+                                        <td colSpan={4} className="py-16 text-center text-slate-400">
                                             No tracks available in database.
                                         </td>
                                     </tr>
                                 ) : (
                                     songs.map((song) => (
-                                        <tr key={song.id} className="hover:bg-slate-50/50 transition-colors">
-                                            <td className="py-4 px-4 font-bold text-slate-700">{song.title}</td>
-                                            <td className="py-4 px-4 text-slate-400">{song.artist}</td>
+                                        <tr key={song.id} className="transition-colors hover:bg-white">
+                                            <td className="py-4 px-4 font-semibold text-slate-800">{song.title}</td>
+                                            <td className="py-4 px-4 text-slate-500">{song.artist}</td>
                                             <td className="py-4 px-4">
-                                                <div className="bg-slate-50/80 p-1.5 rounded-xl w-fit border border-slate-100">
-                                                    <audio controls src={song.audio_url} className="h-7 max-w-52.5 outline-none" />
+                                                <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+                                                    <audio controls src={song.audio_url} className="w-full max-w-[320px] outline-none" />
                                                 </div>
                                             </td>
                                             <td className="py-4 px-4 text-center">
                                                 <button
                                                     onClick={() => handleDeleteSong(song.id)}
-                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                                                    className="inline-flex h-10 min-w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
                                                     title="Delete Track"
                                                 >
-                                                    <FaTrash className="text-xs" />
+                                                    <FaTrash className="text-sm" />
                                                 </button>
                                             </td>
                                         </tr>
@@ -233,5 +249,6 @@ export default function MusicController() {
                 </div>
             </div>
         </div>
+    </div>
     );
 }

@@ -90,6 +90,18 @@ export default function Deshbord() {
 
   const sevaScore = 0;
 
+  const setDesboard = (role: string) => {
+    if (role === "super_admin") {
+
+    }
+    if (role === "DEPARTMENT_HEAD") {
+
+    }
+    return navigate("/");
+  }
+
+  setDesboard(userRole);
+
   useEffect(() => {
     const fetchDashboardMeta = async () => {
       try {
@@ -340,7 +352,7 @@ export default function Deshbord() {
             </div>
           </div>
         </div>
-
+        {}
         <div className="flex w-full flex-1 flex-col gap-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <ChartCard
@@ -429,7 +441,7 @@ function LogItem({ title, subtitle }: { title: string; subtitle: string }) {
   );
 }
 
-function ChartCard({
+export function ChartCard({
   title,
   subtitle,
   badge,

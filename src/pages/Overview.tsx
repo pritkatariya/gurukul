@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useMusic } from "../Components/MusicProvider";
+import { BookOpen } from 'lucide-react';
 
 import LogoImg from "../assets/gurukul logo.png";
 import BhayavadarImg from "../assets/Bhayavadar.png";
@@ -433,6 +434,26 @@ export default function Overview() {
                                 A divine abode of learning and devotion, where the sacred meets the scholarly.
                             </p>
                         </motion.div>
+
+                        {/* Today's Message (compact) - moved from Daily-Darshan component */}
+                        <div className="mx-auto mt-8 w-full max-w-4xl px-4 sm:px-6">
+                            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-red-100 to-amber-50 p-6 shadow-md">
+                                <div className="absolute right-0 top-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-red-200/60 blur-2xl" />
+                                <div className="relative flex items-start gap-4">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500 shadow">
+                                        <BookOpen className="h-6 w-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-red-800">Today's Message</h3>
+                                        <p className="mt-2 text-sm leading-relaxed text-gray-700">
+                                            In the Swaminarayan tradition, Daily Darshan is more than just viewing an image — it is a
+                                            sacred communion between the devotee's soul and Bhagwan. When we take darshan with purity
+                                            of heart and full concentration, we receive divine blessings that protect us through the day.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <motion.div
                             variants={fadeUp}
