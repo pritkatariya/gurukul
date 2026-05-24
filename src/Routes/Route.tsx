@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Overview from "../pages/Overview";
 import Login from "../Auth/Login";
 import Deshbord from "../pages/Deshbord";
@@ -18,13 +18,18 @@ import AmruthuAachaman from "../pages/Admin/Daily-Quotes/Amrut-nu-aachaman";
 import DailyDarshan from "../pages/Admin/Daily-Quotes/Daily-Darshan";
 import AmrutAachaman from "../pages/Overview-pages/Amrut-Aachaman";
 
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+    const user = localStorage.getItem("user");
+    return user ? children : <Navigate to="/login" />;
+};
+
 export default function Router() {
     return (
         <Routes>
             <Route path="/" element={<Overview />} />
             <Route path="/Amrut-Aachaman" element={<AmrutAachaman />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/deshbord" element={<Layout />}>
+            <Route path="/deshbord" element={<PrivateRoute><Layout /></PrivateRoute>}>
                 <Route index element={<Deshbord />} />
                 <Route path="overview-controller" element={<OverviewController />} />
                 <Route path="overview-music" element={<MusicController />} />
