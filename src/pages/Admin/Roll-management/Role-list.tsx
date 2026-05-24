@@ -23,6 +23,8 @@ type PermissionState = {
     role: { create: boolean; view: boolean };
     user: { create: boolean; view: boolean };
     overview: { manage: boolean; music: boolean; editor: boolean };
+    admin: { access: boolean };
+    department: { main: boolean };
 };
 
 type ViewRoleState = {
@@ -37,6 +39,8 @@ const defaultPermissions: PermissionState = {
     role: { create: false, view: false },
     user: { create: false, view: false },
     overview: { manage: false, music: false, editor: false },
+    admin: { access: false },
+    department: { main: false },
 };
 
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");
@@ -67,6 +71,12 @@ const normalizePermissions = (permissions: any): PermissionState => {
             music: Boolean(parsed?.overview?.music),
             editor: Boolean(parsed?.overview?.editor),
         },
+        admin: {
+            access: Boolean(parsed?.admin?.access ?? parsed?.admin ?? parsed?.isAdmin),
+        },
+        department: {
+            main: Boolean(parsed?.department_main ?? parsed?.department?.main),
+        },
     };
 };
 
@@ -75,6 +85,8 @@ const getAccessLevel = (permissions: PermissionState) => {
         ...Object.values(permissions.role),
         ...Object.values(permissions.user),
         ...Object.values(permissions.overview),
+        ...Object.values(permissions.admin),
+        ...Object.values(permissions.department),
     ];
 
     if (allValues.every(Boolean)) return "Full System Access";
@@ -219,7 +231,9 @@ export default function RoleList() {
     const editAllSelected =
         Object.values(editPermissions.role).every(Boolean) &&
         Object.values(editPermissions.user).every(Boolean) &&
-        Object.values(editPermissions.overview).every(Boolean);
+        Object.values(editPermissions.overview).every(Boolean) &&
+        Object.values(editPermissions.admin).every(Boolean) &&
+        Object.values(editPermissions.department).every(Boolean);
 
     const handleEditSelectAll = () => {
         const next = !editAllSelected;
@@ -228,6 +242,8 @@ export default function RoleList() {
             role: { create: next, view: next },
             user: { create: next, view: next },
             overview: { manage: next, music: next, editor: next },
+            admin: { access: next },
+            department: { main: next },
         });
     };
 
@@ -373,6 +389,16 @@ export default function RoleList() {
                                                 ["Event Editor", viewRole.permissions.overview.editor],
                                             ]}
                                         />
+
+                                        <PermissionViewRow
+                                            title="Admin Permission"
+                                            permissions={[["Admin Access", viewRole.permissions.admin.access]]}
+                                        />
+
+                                        <PermissionViewRow
+                                            title="Department / Head"
+                                            permissions={[["Department Main", viewRole.permissions.department.main]]}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -386,8 +412,8 @@ export default function RoleList() {
             )}
 
             {editOpen && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
-                    <div className="w-full max-w-3xl rounded-[2rem] bg-white p-6 shadow-2xl border border-red-50">
+                <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+                    <div className="w-full max-w-3xl rounded-4xl bg-white p-6 shadow-2xl border border-red-50">
                         <div className="mb-5 flex items-start justify-between gap-4">
                             <div>
                                 <p className="text-xs font-black uppercase tracking-[0.25em] text-red-700">
@@ -484,6 +510,22 @@ export default function RoleList() {
                                             permissions={editPermissions}
                                             onChange={handlePermissionChange}
                                         />
+
+                                        <PermissionRow
+                                            title="Admin Permission"
+                                            module="admin"
+                                            items={["access"]}
+                                            permissions={editPermissions}
+                                            onChange={handlePermissionChange}
+                                        />
+
+                                        <PermissionRow
+                                            title="Department / Head"
+                                            module="department"
+                                            items={["main"]}
+                                            permissions={editPermissions}
+                                            onChange={handlePermissionChange}
+                                        />
                                     </div>
                                 </div>
 
@@ -570,10 +612,14 @@ function PermissionRow({
                             onChange={() => onChange(module, item)}
                         />
                         <span className="text-sm font-bold text-gray-600">
-                            {item
-                                .replace("manage", "Manage Overview")
-                                .replace("music", "Music Tracks")
-                                .replace("editor", "Event Editor")}
+                            {(() => {
+                                if (item === "access") return "Admin Access";
+                                if (item === "main") return "Department Head";
+                                return item
+                                    .replace("manage", "Manage Overview")
+                                    .replace("music", "Music Tracks")
+                                    .replace("editor", "Event Editor");
+                            })()}
                         </span>
                     </label>
                 ))}

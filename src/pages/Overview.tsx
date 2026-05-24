@@ -1,15 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
+
 import "../App.css";
 import { GiPagoda } from "react-icons/gi";
+import { BsCalendarEventFill } from "react-icons/bs";
 import {
     FaArrowRight,
     FaChevronLeft,
     FaChevronRight,
+    FaEye,
     FaPlay,
+    FaWater,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useMusic } from "../Components/MusicProvider";
+import { BookOpen } from 'lucide-react';
 
 import LogoImg from "../assets/gurukul logo.png";
 import BhayavadarImg from "../assets/Bhayavadar.png";
@@ -18,24 +23,12 @@ import SwaminarayanSceneImg from "../assets/swaminarayan-blessing.png";
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");
 
 type OverviewApiConfig = {
-    heroTitle: string;
-    heroSubtitle: string;
     heroImages: string[];
     logoImage: string;
     campusImage: string;
     campusGalleryImages: string[];
-    stackTitle: string;
-    stackSubtitle: string;
-    stackImages: string[];
-    showStackSection: boolean;
-    domeTitle: string;
-    domeSubtitle: string;
-    domeImages: string[];
-    showDomeSection: boolean;
-    chromaTitle: string;
-    chromaSubtitle: string;
-    chromaImages: string[];
-    showChromaSection: boolean;
+    dailyDarshan?: string[];
+    dailyDarshanImages?: string[];
 };
 
 const fadeUp: Variants = {
@@ -69,6 +62,8 @@ export default function Overview() {
     const [logoDocked, setLogoDocked] = useState(false);
     const [heroIndex, setHeroIndex] = useState(0);
     const [overviewConfig, setOverviewConfig] = useState<OverviewApiConfig | null>(null);
+    const [selectedDarshanImage, setSelectedDarshanImage] = useState<string | null>(null);
+    const darshanSectionRef = useRef<HTMLDivElement>(null);
 
     const { isMusicPlaying, toggleMusic, playMusic } = useMusic();
 
@@ -79,6 +74,8 @@ export default function Overview() {
                 const data = await response.json();
 
                 if (data.success) {
+                    console.log(data.config);
+                    
                     setOverviewConfig(data.config);
                 }
             } catch (error) {
@@ -93,18 +90,9 @@ export default function Overview() {
 
         return () => window.removeEventListener("overview-config-updated", handleUpdated);
     }, []);
-    const dailyDarshanImages = [
-        BhayavadarImg,
-        SwaminarayanSceneImg,
-        BhayavadarImg,
-        SwaminarayanSceneImg,
-        BhayavadarImg,
-        SwaminarayanSceneImg,
-        BhayavadarImg,
-        SwaminarayanSceneImg,
-        BhayavadarImg,
-        SwaminarayanSceneImg,
-    ];
+    const scrollToDarshan = () => {
+        darshanSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
     useEffect(() => {
         const fetchAndPlayDefaultTrack = async () => {
@@ -154,6 +142,15 @@ export default function Overview() {
                 : [BhayavadarImg, SwaminarayanSceneImg],
         [overviewConfig]
     );
+
+    const dailyDarshan = useMemo(() => {
+        if (!overviewConfig) return [BhayavadarImg, SwaminarayanSceneImg];
+
+        if (overviewConfig.dailyDarshan?.length) return overviewConfig.dailyDarshan;
+        if (overviewConfig.dailyDarshanImages?.length) return overviewConfig.dailyDarshanImages;
+
+        return [BhayavadarImg, SwaminarayanSceneImg];
+    }, [overviewConfig]);
 
     useEffect(() => {
         if (loading || heroImages.length === 0) return;
@@ -278,7 +275,27 @@ export default function Overview() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+                <motion.div
+                    className="fixed top-24 left-5 z-40 w-20 md:w-90 p-2 gap-4 flex flex-col rounded-3xl bg-white/20 backdrop-blur-md shadow-lg border border-white/20"
+                    initial={{ x: -100, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                >
+                    <Link to="/Amrut-Aachaman" className="flex justify-between items-center px-5  bg-white rounded-xl shadow-sm hover:scale-[1.02] transition-transform cursor-pointer">
+                        <div className="w-10 h-10 flex justify-center items-center text-red-800 border-red-100"><FaWater size={22} /></div>
+                        <p className="p-4 text-sm md:flex hidden font-bold text-red-800 uppercase tracking-wider">Amrut nu Achaman</p>
+                    </Link>
 
+                    <div onClick={scrollToDarshan} className="flex justify-between items-center px-4 bg-white rounded-xl shadow-sm hover:scale-[1.02] hover:bg-amber-50 transition-all cursor-pointer">
+                        <div className="w-10 h-10 flex justify-center items-center text-red-800 border-red-100"><FaEye size={22} /></div>
+                        <p className="p-4 text-sm md:flex hidden font-bold text-red-800 uppercase tracking-wider">Daily Darshan</p>
+                    </div>
+
+                    <div className="flex justify-between items-center px-4 bg-white rounded-xl shadow-sm hover:scale-[1.02] transition-transform cursor-pointer">
+                        <div className="w-10 h-10 flex justify-center items-center text-red-800 border-red-100"><BsCalendarEventFill size={20} /></div>
+                        <p className="p-4 text-sm md:flex hidden font-bold text-red-800 uppercase tracking-wider">Activities</p>
+                    </div>
+                </motion.div>
                 <Link
                     to="/login"
                     className="group fixed right-4 top-4 z-50 flex h-11 items-center justify-center gap-2 rounded-full bg-white px-5 font-bold text-red-800 shadow-2xl ring-1 ring-red-100 transition-all hover:scale-105 hover:bg-red-50 active:scale-95 md:right-8 md:top-6 md:h-12 md:px-6"
@@ -352,7 +369,7 @@ export default function Overview() {
                             </h2>
 
                             <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-red-700 md:text-xl md:leading-8">
-                              VIDYA, SADVIDYA, ANE BRAHMVIDYA NO ANOKHO SANGAM.
+                                VIDYA, SADVIDYA, ANE BRAHMVIDYA NO ANOKHO SANGAM.
                             </p>
                         </motion.div>
 
@@ -398,7 +415,7 @@ export default function Overview() {
                         </div>
                     </div>
                 </section>
-                <section className="relative min-h-screen w-full overflow-hidden px-4 py-14 sm:px-5 md:px-8 md:py-24">
+                <section ref={darshanSectionRef} className="relative min-h-screen w-full overflow-hidden px-4 py-14 sm:px-5 md:px-8 md:py-24">
                     <AnimatedSectionBackground />
 
                     <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center">
@@ -418,6 +435,26 @@ export default function Overview() {
                             </p>
                         </motion.div>
 
+                        {/* Today's Message (compact) - moved from Daily-Darshan component */}
+                        <div className="mx-auto mt-8 w-full max-w-4xl px-4 sm:px-6">
+                            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-red-100 to-amber-50 p-6 shadow-md">
+                                <div className="absolute right-0 top-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-red-200/60 blur-2xl" />
+                                <div className="relative flex items-start gap-4">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500 shadow">
+                                        <BookOpen className="h-6 w-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-red-800">Today's Message</h3>
+                                        <p className="mt-2 text-sm leading-relaxed text-gray-700">
+                                            In the Swaminarayan tradition, Daily Darshan is more than just viewing an image — it is a
+                                            sacred communion between the devotee's soul and Bhagwan. When we take darshan with purity
+                                            of heart and full concentration, we receive divine blessings that protect us through the day.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <motion.div
                             variants={fadeUp}
                             initial="hidden"
@@ -425,9 +462,11 @@ export default function Overview() {
                             viewport={{ once: true, amount: 0.15 }}
                             className="mt-10 grid w-full grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5"
                         >
-                            {dailyDarshanImages.slice(0, 10).map((src, index) => (
-                                <div
+                            {dailyDarshan.map((src, index) => (
+                                <button
                                     key={`${src}-${index}`}
+                                    type="button"
+                                    onClick={() => setSelectedDarshanImage(src)}
                                     className="group aspect-4/5 w-full overflow-hidden rounded-2xl border border-amber-200/70 bg-white/20 p-1.5 shadow-lg backdrop-blur-sm sm:rounded-3xl"
                                 >
                                     <img
@@ -436,11 +475,34 @@ export default function Overview() {
                                         loading="lazy"
                                         className="h-full w-full rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105 sm:rounded-[1.25rem]"
                                     />
-                                </div>
+                                </button>
                             ))}
                         </motion.div>
                     </div>
                 </section>
+
+                <AnimatePresence>
+                    {selectedDarshanImage && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+                            onClick={() => setSelectedDarshanImage(null)}
+                        >
+                            <motion.img
+                                src={selectedDarshanImage}
+                                alt="Selected Daily Darshan"
+                                initial={{ scale: 0.9 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0.9 }}
+                                transition={{ duration: 0.25 }}
+                                className="max-h-full max-w-full rounded-3xl object-contain shadow-2xl"
+                                onClick={(event) => event.stopPropagation()}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </main>
         </>
     );

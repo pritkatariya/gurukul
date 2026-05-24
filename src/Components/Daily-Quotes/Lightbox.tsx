@@ -89,7 +89,7 @@ export default function Lightbox({
             />
           </div>
           {image.title && (
-            <p className="mt-3 text-center text-sm font-medium text-white/80">
+            <p className="mt-3 text-center text-2xl text-shadow-lg text-shadow-gray-100 font-medium text-white/80">
               {image.title}
             </p>
           )}

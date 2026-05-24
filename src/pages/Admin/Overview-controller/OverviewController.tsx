@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FaImage, FaRotateLeft, FaTrash } from "react-icons/fa6";
+import { IoIosImages } from "react-icons/io";
 
 type OverviewConfig = {
     heroImages: string[];
@@ -266,6 +267,10 @@ export default function OverviewController() {
                         Loading overview controller...
                     </p>
                     <p className="mt-2 text-xs font-medium text-red-700/70">
+                    <p className="text-sm font-black uppercase tracking-[0.3em] text-gray-800">
+                        Loading overview controller...
+                    </p>
+                    <p className="mt-2 text-xs font-medium text-gray-700/70">
                         Fetching hero, campus, and Daily Darshan assets.
                     </p>
                 </div>
@@ -320,11 +325,52 @@ export default function OverviewController() {
                     </p>
                 </div>
 
+        <div className="w-full min-h-full rounded-4xl bg-white p-5 shadow-sm md:p-7">
+            <div className="mb-6 gap-4 w-full xl:items-start justify-between flex flex-col">
+                <div className=" w-full">
+                    <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-[11px] font-black uppercase tracking-[0.3em] text-gray-950">
+                        Overview Manager
+                    </span>
+                    <div className="mt-4 max-w-2xl">
+                        <h1 className="text-3xl font-black text-gray-700 sm:text-4xl">
+                            Homepage Image Control
+                        </h1>
+                        <p className="mt-3 text-sm font-medium text-red-600/80 sm:text-base">
+                            Configure the landing page visual sections, upload hero banners, campus imagery, and Daily Darshan highlights with confidence.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="grid sm:flex sm:justify-center sm:items-center gap-3 my-5 sm:grid-cols-2 xl:grid-cols-1">
+                    <div className="rounded-3xl border border-red-100  p-4 shadow-sm">
+                        <p className="text-xs font-black uppercase tracking-[0.2em]">
+                            Hero Images
+                        </p>
+                        <p className="mt-2 text-2xl font-black">{config.heroImages.length}</p>
+                    </div>
+                    <div className="rounded-3xl border border-red-100  p-4 shadow-sm">
+                        <p className="text-xs font-black uppercase tracking-[0.2em]">
+                            Darshan Items
+                        </p>
+                        <p className="mt-2 text-2xl font-black">{config.dailyDarshanImages.length}/10</p>
+                    </div>
+                    <div className="rounded-3xl border border-red-100 p-4 shadow-sm">
+                        <p className="text-xs font-black uppercase tracking-[0.2em]">
+                            Campus Gallery
+                        </p>
+                        <p className="mt-2 text-2xl font-black">{config.campusGalleryImages.length}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <IoIosImages size={24} className="text-gray-900 mx-5" />
                 <div className="flex flex-col gap-3 sm:flex-row">
                     <button
                         type="button"
                         onClick={handleReset}
                         className="inline-flex h-12 items-center justify-center gap-2 rounded-3xl border border-red-200 bg-white px-5 text-sm font-black text-red-800 shadow-sm transition-all hover:bg-red-50 active:scale-95"
+                        className="inline-flex h-12 items-center justify-center gap-2 rounded-3xl border border-red-200 bg-white px-5 text-sm font-black text-gray-800 shadow-sm transition-all hover:bg-red-50 active:scale-95"
                     >
                         <FaRotateLeft /> Reset
                     </button>
@@ -348,6 +394,10 @@ export default function OverviewController() {
                         </div>
                         <h2 className="text-xl font-black text-red-900">Hero Slider</h2>
                         <p className="text-sm font-medium text-red-700/80">
+                <section className="rounded-[28px] p-5 shadow-sm">
+                    <div className="mb-5 flex flex-col gap-2">
+                        <h2 className="text-xl font-black">Hero Slider</h2>
+                        <p className="text-sm font-medium">
                             Upload the primary homepage banners users will see on the landing page.
                         </p>
                     </div>
@@ -380,6 +430,13 @@ export default function OverviewController() {
                         </div>
                         <h2 className="text-xl font-black text-red-900">Campus Section</h2>
                         <p className="text-sm font-medium text-red-700/80">
+                <section className="rounded-[28px]  p-5 shadow-sm">
+                    <div className="mb-5 flex flex-col gap-2">
+                        <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.25em]">
+                            2
+                        </div>
+                        <h2 className="text-xl font-black text-gray-900">Campus Section</h2>
+                        <p className="text-sm font-medium text-gray-700/80">
                             Set the campus hero image and supporting gallery visuals.
                         </p>
                     </div>
@@ -416,6 +473,13 @@ export default function OverviewController() {
                         </div>
                         <h2 className="text-xl font-black text-red-900">Daily Darshan</h2>
                         <p className="text-sm font-medium text-red-700/80">
+                <section className="rounded-[28px] p-5 shadow-sm xl:col-span-2">
+                    <div className="mb-5 flex flex-col gap-2">
+                        <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.25em]">
+                            3
+                        </div>
+                        <h2 className="text-xl font-black text-gray-900">Daily Darshan</h2>
+                        <p className="text-sm font-medium text-gray-700/80">
                             Upload up to 10 Daily Darshan cards for the homepage carousel.
                         </p>
                     </div>
@@ -459,6 +523,10 @@ function ImageInput({
                     {label}
                 </span>
                 <span className="rounded-full bg-red-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-red-700">
+                <span className="text-xs font-black uppercase tracking-[0.25em] text-gray-800">
+                    {label}
+                </span>
+                <span className="rounded-full bg-red-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-700">
                     Single image
                 </span>
             </div>
@@ -476,12 +544,14 @@ function ImageInput({
                             type="button"
                             onClick={onClear}
                             className="absolute bottom-4 right-4 rounded-full border border-red-200 bg-white/95 px-3 py-2 text-xs font-black uppercase tracking-[0.2em] text-red-800 shadow-sm transition hover:bg-white"
+                            className="absolute bottom-4 right-4 rounded-full border border-red-200 bg-white/95 px-3 py-2 text-xs font-black uppercase tracking-[0.2em] text-gray-800 shadow-sm transition hover:bg-white"
                         >
                             Clear
                         </button>
                     </div>
                 ) : (
                     <div className="rounded-3xl border border-dashed border-red-200 bg-red-50/80 px-4 py-10 text-center text-sm font-medium text-red-700/80">
+                    <div className="rounded-3xl border border-dashed border-red-200 bg-red-50/80 px-4 py-10 text-center text-sm font-medium text-gray-700/80">
                         No image selected yet. Use the upload button to add one.
                     </div>
                 )}
@@ -509,6 +579,10 @@ function MultiImageUploadView({
                         {label}
                     </span>
                     <p className="mt-1 text-xs text-red-700/70">
+                    <span className="block text-xs font-black uppercase tracking-[0.25em] text-gray-800">
+                        {label}
+                    </span>
+                    <p className="mt-1 text-xs text-gray-700/70">
                         Upload multiple images for this section and manage previews instantly.
                     </p>
                 </div>
@@ -531,6 +605,7 @@ function MultiImageUploadView({
                                 type="button"
                                 onClick={() => onRemove(index)}
                                 className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-red-800 shadow-md transition hover:bg-red-50"
+                                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-800 shadow-md transition hover:bg-red-50"
                             >
                                 <FaTrash className="text-[11px]" />
                             </button>
@@ -539,6 +614,7 @@ function MultiImageUploadView({
                 </div>
             ) : (
                 <div className="rounded-3xl border border-dashed border-red-200 bg-red-50/80 px-5 py-10 text-center text-sm font-medium text-red-700/80">
+                <div className="rounded-3xl border border-dashed border-red-200 bg-red-50/80 px-5 py-10 text-center text-sm font-medium text-gray-700/80">
                     No images added yet. Click the upload button to start adding visuals.
                 </div>
             )}

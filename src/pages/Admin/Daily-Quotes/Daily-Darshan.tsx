@@ -1,11 +1,11 @@
-import type { Metadata } from 'next';
-import DailyDarshan from '../../../Components/Daily-Quotes/Daily-Darshan';
-
-export const metadata: Metadata = {
-  title: 'Daily Darshan | Swaminarayan Gurukul',
-  description: 'Experience divine presence every day — Daily Darshan gallery from Swaminarayan Gurukul.',
-};
+import { Link } from 'react-router-dom';
 
 export default function DailyDarshanPage() {
-  return <DailyDarshan />;
+  return (
+    <div className="mx-auto max-w-4xl p-8">
+      <h1 className="mb-4 text-2xl font-bold">Daily Darshan</h1>
+      <p className="mb-6 text-gray-700">The Daily Darshan content has been consolidated into the main Overview page.</p>
+      <Link to="/" className="rounded-lg bg-red-500 px-4 py-2 text-white">Go to Overview</Link>
+    </div>
+  );
 }

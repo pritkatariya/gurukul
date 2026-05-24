@@ -18,11 +18,13 @@ import EventEditor from "../pages/Admin/Event-editor/EventEditor";
 import AmruthuAachaman from "../pages/Admin/Daily-Quotes/Amrut-nu-aachaman";
 import DailyDarshan from "../pages/Admin/Daily-Quotes/Daily-Darshan";
 import StudentListGCulture from "../pages/Departments/G-Culture/User-lists";
+import AmrutAachaman from "../pages/Overview-pages/Amrut-Aachaman";
 
 export default function Router() {
     return (
         <Routes>
             <Route path="/" element={<Overview />} />
+            <Route path="/Amrut-Aachaman" element={<AmrutAachaman />} />
             <Route path="/login" element={<Login />} />
             <Route path="/deshbord" element={<Layout />}>
                 <Route index element={<Deshbord />} />

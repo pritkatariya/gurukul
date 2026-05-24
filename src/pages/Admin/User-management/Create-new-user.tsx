@@ -252,7 +252,13 @@ export default function CreateNewUser() {
 
             if (!response.ok) {
                 console.log("Create user error:", data);
-                toast.error(data.detail || data.message || "Failed to create user");
+                const detailMessage = String(data?.detail || data?.message || "Failed to create user");
+                const usernameExists = detailMessage.toLowerCase().includes("username");
+                toast.error(
+                    usernameExists
+                        ? "Username already exists. Please choose a different username."
+                        : detailMessage
+                );
                 return;
             }
 
@@ -317,7 +323,7 @@ export default function CreateNewUser() {
             </div>
 
             <motion.div
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 15 }}rounded-4xl
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-7xl rounded-[2.5rem] border border-red-50 bg-white p-6 shadow-md md:p-10"
             >

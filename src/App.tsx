@@ -5,6 +5,7 @@ import { MusicProvider } from "./Components/MusicProvider";
 import { Toaster } from "sonner";
 
 function App() {
+
     return (
         <MusicProvider>
             <BrowserRouter>

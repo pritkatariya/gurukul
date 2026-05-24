@@ -64,7 +64,13 @@ export default function UserList() {
 
     const isHeadRole = (role: any) => {
         const roleCode = getRoleCode(role);
-        return roleCode === "head1029" || roleCode === "department main";
+        // Accept multiple variants: 'department_main', 'department main', 'DEPARTMENT_MAIN', or any role containing both words
+        if (roleCode === "head1029") return true;
+        if (roleCode === "department_main" || roleCode === "department main") return true;
+        if (roleCode.includes("department") && roleCode.includes("main")) return true;
+        // Also treat roles that start with 'head' as head roles
+        if (roleCode.startsWith("head")) return true;
+        return false;
     };
 
     const fetchLiveDepartments = async () => {
@@ -228,7 +234,11 @@ export default function UserList() {
 
             let roleDisplay = String(user.role || "user").toUpperCase();
 
-            if (roleDisplay === "HEAD1029" || roleDisplay === "DEPARTMENT MAIN") {
+            if (
+                roleDisplay === "HEAD1029" ||
+                roleDisplay === "DEPARTMENT MAIN" ||
+                roleDisplay === "DEPARTMENT_MAIN"
+            ) {
                 const deptName = deptMap[user.department_id] || "General";
                 roleDisplay = `${deptName} Head`;
             }
