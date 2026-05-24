@@ -115,6 +115,23 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 }
             }
 
+            if (isSuperAdmin || userDepartmentId === 3) {
+                const resCulture = await fetch(`${API_URL}/g-culture/admit-list`);
+                const dataCulture = await resCulture.json();
+
+                if (dataCulture.success && dataCulture.requests) {
+                    const pendingCulture = dataCulture.requests
+                        .filter((request: any) => String(request.status).toLowerCase() === "pending")
+                        .map((request: any) => ({
+                            ...request,
+                            originDept: "g-culture",
+                            deptName: "G-Culture",
+                        }));
+
+                    combinedPending = [...combinedPending, ...pendingCulture];
+                }
+            }
+
             const params = new URLSearchParams({
                 filterType: "week",
                 userId: String(userData?.id || 0),

@@ -30,11 +30,11 @@ interface OnboardedUserType {
 const getImageUrl = (item: any) =>
   item?.profile_image_url || item?.image_url || item?.img || null;
 
-export default function StudentListGMusic() {
+export default function StudentListGCulture() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const currentDeptId = Number(searchParams.get("dept_id")) || 1;
+  const currentDeptId = Number(searchParams.get("dept_id")) || 3;
 
   const [requests, setRequests] = useState<SeekerRequestType[]>([]);
   const [onboardedStudents, setOnboardedStudents] = useState<OnboardedUserType[]>([]);
@@ -43,8 +43,8 @@ export default function StudentListGMusic() {
 
   const headers = ["Profile", "Sevak Name", "Performance", "SUID / Code", "Request Date", "Status"];
 
-  const departmentName = "G-Music";
-  const apiRoutePrefix = "g-music";
+  const departmentName = "G-Culture";
+  const apiRoutePrefix = "g-culture";
 
   const fetchDepartmentData = async () => {
     try {

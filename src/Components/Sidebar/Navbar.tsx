@@ -12,6 +12,7 @@ import {
     FaCalendarPlus,
     FaWater,
     FaEye,
+    FaQuoteLeft,
 } from "react-icons/fa";
 import { FaClipboardUser } from "react-icons/fa6";
 import Dropdown from "./DropDown";
@@ -93,6 +94,7 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
     const allDepartments = [
         { id: 1, department_name: "G-Music", route: "g-music" },
         { id: 2, department_name: "Gurukul Art", route: "gurukul-art" },
+        { id: 3, department_name: "G-Culture", route: "g-culture" },
     ];
 
     const staticDepartments = isMainSuperAdmin
@@ -393,7 +395,7 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
             <div className="absolute bottom-0 left-0 flex w-full flex-col gap-2 p-2">
                 <button
                     onClick={handleLogout}
-                    className="flex w-full cursor-pointer items-center gap-3 rounded-xl p-3 text-xs font-black uppercase tracking-wider text-red-100 transition-all hover:bg-red-900/40"
+                    className="flex w-full cursor-pointer items-center gap-3 rounded-xl p-3 text-xs font-black uppercase tracking-wider text-red-100 transition-all hover:bg-white/20"
                 >
                     <IoLogOut className="shrink-0 text-xl" />
                     {!isCollapsed && <span>Logout</span>}

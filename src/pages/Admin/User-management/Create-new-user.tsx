@@ -290,6 +290,8 @@ export default function CreateNewUser() {
                         navigate("/deshbord/g-music/user-lists?dept_id=1");
                     } else if (deptNum === 2) {
                         navigate("/deshbord/gurukul-art/user-lists?dept_id=2");
+                    } else if (deptNum === 3) {
+                        navigate("/deshbord/g-culture/user-lists?dept_id=3");
                     } else {
                         navigate("/deshbord/user-list");
                     }
