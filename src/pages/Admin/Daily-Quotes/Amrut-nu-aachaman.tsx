@@ -1,11 +1,10 @@
-import type { Metadata } from 'next';
+import { useEffect } from 'react';
 import AmrutGalleryPage from '../../../Components/Daily-Quotes/AmrutGalleryPage';
 
-export const metadata: Metadata = {
-  title: 'Amrut Nu Aachaman | Swaminarayan Gurukul',
-  description: 'Daily spiritual wisdom — Amrut Nu Aachaman gallery from Swaminarayan Gurukul.',
-};
-
 export default function AmrutNuAachamanPage() {
+  useEffect(() => {
+    document.title = 'Amrut Nu Aachaman | Swaminarayan Gurukul';
+  }, []);
+
   return <AmrutGalleryPage />;
 }
