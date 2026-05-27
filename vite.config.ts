@@ -9,18 +9,23 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
     tailwindcss()
   ],
-  base: './',
+  base: '/',
   build: {
     chunkSizeWarningLimit: 1600,
     assetsDir: 'assets',
     outDir: 'dist',
     rollupOptions: {
       output: {
-        manualChunks: undefined,
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]',
       },
     },
   },
+  server: {
+    hmr: {
+      overlay: false,
+    },
+  },
+  logLevel: 'info',
 })
