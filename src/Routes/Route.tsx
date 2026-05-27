@@ -17,6 +17,8 @@ import EventEditor from "../pages/Admin/Event-editor/EventEditor";
 import AmruthuAachaman from "../pages/Admin/Daily-Quotes/Amrut-nu-aachaman";
 import DailyDarshan from "../pages/Admin/Daily-Quotes/Daily-Darshan";
 import AmrutAachaman from "../pages/Overview-pages/Amrut-Aachaman";
+import GmusicSection from "../pages/Departments/G-music/Section";
+import ArtSection from "../pages/Departments/Gurukul-Art/Section";
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
     const user = localStorage.getItem("user");
@@ -42,8 +44,10 @@ export default function Router() {
                 <Route path="roll-list" element={<RollList />} />
                 <Route path="g-music/admit-request" element={<AdmitRequestGMusic />} />
                 <Route path="g-music/user-lists" element={<StudentListGMusic />} />
+                <Route path="g-music/section" element={<GmusicSection />} />
                 <Route path="gurukul-art/admit-request" element={<AdmitRequestGurukulArt />} />
                 <Route path="gurukul-art/user-lists" element={<StudentListGurukulArt />} />
+                <Route path="gurukul-art/section" element={<ArtSection />} />
             </Route>
         </Routes>
     );

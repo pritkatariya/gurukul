@@ -11,6 +11,7 @@ import {
     FaEye
 } from "react-icons/fa";
 import DataExplorer from "../../../Components/commen/DataExplorer.tsx";
+import SGDropdown from "../../../Components/commen/SGDropdown.tsx";
 
 interface UserType {
     id: string | number;
@@ -30,6 +31,10 @@ export default function UserList() {
     const [activeTab, setActiveTab] = useState<CategoryType>("user");
     const [loading, setLoading] = useState<boolean>(true);
     const [deptMap, setDeptMap] = useState<{ [key: number]: string }>({});
+
+    const [selectedHead, setSelectedHead] = useState("");
+    const [gMusicUsers, setGmusicUsers] = useState<any[]>([]);
+    const [isLoadingUsers, setIsLoadingUsers] = useState(false);
 
     const [viewUser, setViewUser] = useState<UserType | null>(null);
     const [editUser, setEditUser] = useState<UserType | null>(null);
@@ -172,6 +177,38 @@ export default function UserList() {
         }
     };
 
+
+    useEffect(() => {
+        if (editUser) {
+            const fetchGMusicUsers = async () => {
+                setIsLoadingUsers(true);
+                try {
+                    const response = await fetch("http://localhost:3000/user/alldata");
+                    const data = await response.json();
+
+                    if (data.success) {
+                        const allUsers = data.users || data.data || [];
+                        // માત્ર department_id 1 (G-Music) વાળા યુઝર્સને ફિલ્ટર કરો
+                        const filteredUsers = allUsers.filter((u: any) => Number(u.department_id) === 1);
+                        setGmusicUsers(filteredUsers);
+                    }
+                } catch (error) {
+                    console.error("Error fetching G-Music users:", error);
+                } finally {
+                    setIsLoadingUsers(false);
+                }
+            };
+
+            fetchGMusicUsers();
+        }
+    }, [editUser]);
+
+    // ડ્રોપડાઉન માટે ઓપ્શન્સ બનાવો
+    const headOptions = gMusicUsers.map((user) => ({
+        value: String(user.id),
+        label: `${user.full_name} (${user.role?.replace(/_/g, " ")})`
+    }));
+
     const handleDeleteUser = async () => {
         if (!deleteUser) return;
 
@@ -278,8 +315,8 @@ export default function UserList() {
                 <button
                     onClick={() => setActiveTab("admin")}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer ${activeTab === "admin"
-                            ? "bg-red-800 text-white shadow-md shadow-red-800/10"
-                            : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"
+                        ? "bg-red-800 text-white shadow-md shadow-red-800/10"
+                        : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"
                         }`}
                 >
                     <FaUserShield size={14} /> Admin ({allUsers.filter((user) => isAdminRole(user.role)).length})
@@ -288,8 +325,8 @@ export default function UserList() {
                 <button
                     onClick={() => setActiveTab("head")}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer ${activeTab === "head"
-                            ? "bg-red-800 text-white shadow-md shadow-red-800/10"
-                            : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"
+                        ? "bg-red-800 text-white shadow-md shadow-red-800/10"
+                        : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"
                         }`}
                 >
                     <FaUserTie size={14} /> Heads ({allUsers.filter((user) => isHeadRole(user.role)).length})
@@ -298,8 +335,8 @@ export default function UserList() {
                 <button
                     onClick={() => setActiveTab("user")}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer ${activeTab === "user"
-                            ? "bg-red-800 text-white shadow-md shadow-red-800/10"
-                            : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"
+                        ? "bg-red-800 text-white shadow-md shadow-red-800/10"
+                        : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"
                         }`}
                 >
                     <FaUserGraduate size={14} /> Users (
@@ -400,21 +437,26 @@ export default function UserList() {
             {editUser && (
                 <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
                     <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
-                        <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+
+                        {/* Header */}
+                        <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                             <div>
                                 <h2 className="text-lg font-black text-red-950 uppercase">Edit User</h2>
-                                <p className="text-xs text-gray-400 font-semibold">Only name and username can be changed</p>
+                                <p className="text-xs text-gray-500 font-semibold">Update user details and permissions</p>
                             </div>
 
                             <button
                                 onClick={closeEditPopup}
-                                className="w-9 h-9 rounded-xl bg-gray-50 text-gray-500 hover:bg-red-50 hover:text-red-800 flex items-center justify-center cursor-pointer"
+                                className="w-9 h-9 rounded-xl bg-white text-gray-500 hover:bg-red-50 hover:text-red-800 flex items-center justify-center cursor-pointer shadow-sm border border-gray-100 transition-colors"
                             >
                                 <FaTimes size={14} />
                             </button>
                         </div>
 
-                        <div className="p-6 flex flex-col gap-4">
+                        {/* Form Body */}
+                        <div className="p-6 flex flex-col gap-5">
+
+                            {/* Full Name Input */}
                             <div>
                                 <label className="block text-xs font-black text-gray-500 uppercase mb-2">
                                     Full Name
@@ -422,11 +464,12 @@ export default function UserList() {
                                 <input
                                     value={editName}
                                     onChange={(event) => setEditName(event.target.value)}
-                                    className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm font-bold text-gray-800 outline-none focus:border-red-800 focus:ring-4 focus:ring-red-50"
+                                    className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm font-bold text-gray-800 outline-none focus:border-red-800 focus:ring-4 focus:ring-red-50 transition-all"
                                     placeholder="Enter full name"
                                 />
                             </div>
 
+                            {/* Username Input */}
                             <div>
                                 <label className="block text-xs font-black text-gray-500 uppercase mb-2">
                                     Username
@@ -434,27 +477,48 @@ export default function UserList() {
                                 <input
                                     value={editUsername}
                                     onChange={(event) => setEditUsername(event.target.value)}
-                                    className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm font-bold text-gray-800 outline-none focus:border-red-800 focus:ring-4 focus:ring-red-50"
+                                    className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm font-bold text-gray-800 outline-none focus:border-red-800 focus:ring-4 focus:ring-red-50 transition-all"
                                     placeholder="Enter username"
                                 />
                             </div>
 
-                            <div className="flex gap-3 pt-2">
+                            {/* Department Head Dropdown (Fixed) */}
+                            <div>
+                                <label className="block text-xs font-black text-gray-500 uppercase mb-2">
+                                    Change Department Head (G-Music)
+                                </label>
+                                <SGDropdown
+                                    name="head"
+                                    value={selectedHead}
+                                    onChange={(event: any) => setSelectedHead(event.target.value)}
+                                    options={headOptions}
+                                    placeholder={
+                                        isLoadingUsers
+                                            ? "Loading users..."
+                                            : headOptions.length === 0
+                                                ? "No users found"
+                                                : "Select new head"
+                                    }
+                                />
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 pt-4 border-t border-gray-100 mt-2">
                                 <button
                                     onClick={closeEditPopup}
                                     disabled={saving}
-                                    className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-600 font-black text-xs uppercase cursor-pointer disabled:opacity-60"
+                                    className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-600 font-black text-xs uppercase cursor-pointer hover:bg-gray-200 transition-colors disabled:opacity-60"
                                 >
                                     Cancel
                                 </button>
 
                                 <button
-                                    onClick={handleUpdateUser}
+                                    onClick={handleUpdateUser} // 👈 સેવ કરતી વખતે API માં selectedHead મોકલવાનું ભૂલતા નહિ 
                                     disabled={saving}
-                                    className="flex-1 h-12 rounded-2xl bg-red-800 text-white font-black text-xs uppercase flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                                    className="flex-1 h-12 rounded-2xl bg-red-800 text-white font-black text-xs uppercase flex items-center justify-center gap-2 cursor-pointer hover:bg-red-900 transition-colors shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
                                     <FaSave size={13} />
-                                    {saving ? "Saving..." : "Save"}
+                                    {saving ? "Saving..." : "Save Changes"}
                                 </button>
                             </div>
                         </div>

@@ -6,7 +6,7 @@ interface DropdownOption {
 }
 
 interface SGDropdownProps {
-  label: string;
+  label?: string;
   name: string;
   value: string;
   onChange: (e: { target: { name: string; value: string } }) => void;
@@ -27,10 +27,13 @@ export default function SGDropdown({
   className = '',
 }: SGDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
 
+  // Handle outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -41,10 +44,26 @@ export default function SGDropdown({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Clear search when closed and focus input when opened
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchQuery('');
+    } else {
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 10);
+    }
+  }, [isOpen]);
+
   const handleSelect = (optionValue: string) => {
     onChange({ target: { name, value: optionValue } });
     setIsOpen(false);
   };
+
+  // Filter options based on search query
+  const filteredOptions = options.filter((opt) =>
+    opt.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className={`w-full relative ${className}`} ref={dropdownRef}>
@@ -53,6 +72,7 @@ export default function SGDropdown({
         {label}
       </label>
 
+      {/* Dropdown Trigger */}
       <div
         tabIndex={0} 
         onClick={() => setIsOpen(!isOpen)}
@@ -84,10 +104,39 @@ export default function SGDropdown({
         </svg>
       </div>
 
+      {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute BrutalZIndex w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto transform origin-top transition-all duration-200 scale-100 p-1.5 z-50">
-          <div className="bg-white space-y-0.5">
-            {options.map((option) => {
+        <div className="absolute BrutalZIndex w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden transform origin-top transition-all duration-200 scale-100 z-50 flex flex-col">
+          
+          {/* Search Bar */}
+          <div className="p-2 border-b border-gray-100 bg-gray-50/50">
+            <div className="relative">
+              <svg 
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") e.preventDefault();
+                }}
+                placeholder="Search..."
+                className="w-full pl-9 pr-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-red-800 focus:ring-2 focus:ring-red-50 transition-all shadow-sm"
+              />
+            </div>
+          </div>
+
+          {/* Options List */}
+          <div className="p-1.5 max-h-60 overflow-y-auto space-y-0.5">
+            {filteredOptions.map((option) => {
               const isSelected = option.value === value;
               return (
                 <div
@@ -117,13 +166,17 @@ export default function SGDropdown({
               );
             })}
             
-            {options.length === 0 && (
-              <div className="p-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">No options available</div>
+            {/* No Result Message */}
+            {filteredOptions.length === 0 && (
+              <div className="p-6 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
+                No options found
+              </div>
             )}
           </div>
         </div>
       )}
 
+      {/* Error Message */}
       {error && (
         <p className="text-red-500 text-xs font-semibold mt-1.5 flex items-center gap-1.5 pl-2">
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">

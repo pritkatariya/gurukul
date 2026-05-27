@@ -54,6 +54,8 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
     const navigate = useNavigate();
 
     const [userPerms, setUserPerms] = useState<UserPermissions>(emptyPerms);
+    // 🔑 State to check if normal user is actually a section head
+    const [isSectionHead, setIsSectionHead] = useState<boolean>(false);
 
     const loggedInUserRole = localStorage.getItem("user_role") || "";
     const userRaw = localStorage.getItem("user");
@@ -65,10 +67,10 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
         try {
             const parsed = JSON.parse(userRaw);
             userId = parsed.id ? Number(parsed.id) : null;
-            userDepartmentId =
-                parsed.department_id !== undefined ? Number(parsed.department_id) : null;
+            userDepartmentId = parsed.department_id !== undefined ? Number(parsed.department_id) : null;
+            
         } catch (error) {
-            console.error(error);
+            console.error("Error parsing user from localStorage:", error);
         }
     }
 
@@ -92,13 +94,51 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
         isMainSuperAdmin;
 
     const allDepartments = [
-        { id: 1, department_name: "G-Music", route: "g-music" },
-        { id: 2, department_name: "Gurukul Art", route: "gurukul-art" },
+        {
+            id: 1,
+            department_name: "G-Music",
+            route: "g-music"
+        },
+        {
+            id: 2,
+            department_name: "Gurukul Art",
+            route: "gurukul-art"
+        },
     ];
 
+    // 🛠️ Updated logic: Jo normal user hoy, to `isSectionHead` true hoy tyarej department dekhase
     const staticDepartments = isMainSuperAdmin
         ? allDepartments
-        : allDepartments.filter((dept) => Number(dept.id) === Number(userDepartmentId));
+        : isNormalUser
+            ? (isSectionHead ? allDepartments.filter((dept) => Number(dept.id) === Number(userDepartmentId)) : [])
+            : allDepartments.filter((dept) => Number(dept.id) === Number(userDepartmentId));
+
+    // 🔍 Live Check: Normal user koi section no head chhe ke nahi e check karva mate
+    useEffect(() => {
+        const checkSectionHeadStatus = async () => {
+            if (!userDepartmentId || !userId || !isNormalUser) return;
+            
+            try {
+                let API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+                if (API_URL.endsWith("/")) API_URL = API_URL.slice(0, -1);
+
+                const response = await fetch(`${API_URL}/sections?dept_id=${userDepartmentId}`);
+                const result = await response.json();
+
+                if (result.success && Array.isArray(result.data)) {
+                    // Check if current user ID matches any section_head_id
+                    const isHead = result.data.some(
+                        (section: any) => Number(section.section_head_id) === Number(userId)
+                    );
+                    setIsSectionHead(isHead);
+                }
+            } catch (error) {
+                console.error("Error checking section head status in navbar:", error);
+            }
+        };
+
+        checkSectionHeadStatus();
+    }, [userDepartmentId, userId, isNormalUser]);
 
     const fetchLiveNavbarStructure = async () => {
         try {
@@ -306,7 +346,9 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
                             )}
                         </Dropdown>
                     )}
-                </div>{isMainSuperAdmin && (
+                </div>
+
+                {isMainSuperAdmin && (
                     <Dropdown
                         icon={<FaQuoteLeft />}
                         arrowicon={<IoMdArrowDroprightCircle />}
@@ -330,7 +372,7 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
                     <LinkButton To="/deshbord" text="Dashboard" icon={<GoHomeFill />} />
                 </div>
 
-                {!isNormalUser && staticDepartments.length > 0 && (
+                {staticDepartments.length > 0 && (
                     <>
                         {!isCollapsed && (
                             <p className="mb-1 mt-2 truncate px-2 text-xs font-black uppercase tracking-wider text-red-100">
@@ -349,20 +391,32 @@ export default function Navbar({ isCollapsed, setIsCollapsed }: NavbarProps) {
                                     onToggle={() => handleToggle(`dept-${index}`)}
                                     isCollapsed={isCollapsed}
                                 >
-                                    <Link
-                                        to={`/deshbord/${dept.route}/admit-request?dept_id=${dept.id}`}
-                                        className="flex w-full items-center gap-2 rounded-xl p-2.5 text-left text-xs font-black uppercase tracking-wider text-red-900 transition-colors hover:bg-red-800/10"
-                                    >
-                                        <FaPlus className="shrink-0 text-base text-red-800/70" />
-                                        <span>Admit Request</span>
-                                    </Link>
+                                    {!isNormalUser && (
+                                        <Link
+                                            to={`/deshbord/${dept.route}/admit-request?dept_id=${dept.id}`}
+                                            className="flex w-full items-center gap-2 rounded-xl p-2.5 text-left text-xs font-black uppercase tracking-wider text-red-900 transition-colors hover:bg-red-800/10"
+                                        >
+                                            <FaPlus className="shrink-0 text-base text-red-800/70" />
+                                            <span>Admit Request</span>
+                                        </Link>
+                                    )}
+
+                                    {!isNormalUser && (
+                                        <Link
+                                            to={`/deshbord/${dept.route}/user-lists?dept_id=${dept.id}`}
+                                            className="flex w-full items-center gap-2 rounded-xl p-2.5 text-left text-xs font-black uppercase tracking-wider text-red-900 transition-colors hover:bg-red-800/10"
+                                        >
+                                            <FaList className="shrink-0 text-base text-red-800/70" />
+                                            <span>Student List</span>
+                                        </Link>
+                                    )}
 
                                     <Link
-                                        to={`/deshbord/${dept.route}/user-lists?dept_id=${dept.id}`}
+                                        to={`/deshbord/${dept.route}/section?dept_id=${dept.id}`}
                                         className="flex w-full items-center gap-2 rounded-xl p-2.5 text-left text-xs font-black uppercase tracking-wider text-red-900 transition-colors hover:bg-red-800/10"
                                     >
                                         <FaList className="shrink-0 text-base text-red-800/70" />
-                                        <span>Student List</span>
+                                        <span>Sections</span>
                                     </Link>
                                 </Dropdown>
                             ))}

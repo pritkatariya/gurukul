@@ -23,8 +23,8 @@ export default function Button({
         <button
             // 🎯 જો લોડિંગ ચાલુ હોય તો ડિસેબલ કલર્સ ઓટોમેટિક એપ્લાય થશે
             className={`
-                relative flex items-center justify-between gap-3 
-                rounded-2xl p-2 transition-all duration-300 w-full
+                relative flex items-center justify-center gap-3
+                p-2 transition-all duration-300
                 shadow-md shadow-gray-950/10 border
                 ${isLoading 
                     ? "bg-slate-200 text-slate-400 border-slate-200 cursor-not-allowed transform-none" 
@@ -49,7 +49,7 @@ export default function Button({
             )}
 
             {/* 🎯 જો લોડિંગ હોય તો લોડિંગ ટેક્સ્ટ, નહીં તો નોર્મલ ટેક્સ્ટ */}
-            <span className="flex-1 text-left font-black text-xs uppercase tracking-wider truncate px-1">
+            <span className="flex-1 text-left font-black uppercase tracking-wider truncate px-1">
                 {isLoading ? loadingText : text}
             </span>
 
