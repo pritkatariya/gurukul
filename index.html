@@ -1,16 +1,20 @@
 <!doctype html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./src/assets/gurukul logo.png" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>I AM GURUKUL SEVAK</title>
-</head>
-
-<body>
+    <title>Vite + React</title>
+    <script>
+      const originalWarn = console.warn;
+      console.warn = (...args) => {
+        if (args[0]?.includes?.('[Violation]')) return;
+        originalWarn.apply(console, args);
+      };
+    </script>
+  </head>
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-</body>
-
+  </body>
 </html>

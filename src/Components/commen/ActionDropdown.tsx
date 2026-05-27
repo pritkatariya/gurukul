@@ -72,32 +72,32 @@ export default function ActionDropdown({ onView, onEdit, onDelete }: ActionDropd
                         className="w-36 bg-white border border-gray-100 rounded-xl shadow-2xl p-1 flex flex-col gap-0.5 transform origin-top-right transition-all duration-150"
                         onClick={(e) => e.stopPropagation()}
                     >
-                    <button
-                        onClick={() => { onView(); closeMenu(); }}
-                        className="w-full text-left px-3 py-2 text-xs font-black text-gray-700 hover:bg-red-50 hover:text-red-800 rounded-lg flex items-center gap-2 transition-colors cursor-pointer focus:outline-none uppercase tracking-wider"
-                    >
-                        <FaEye size={12} className="text-gray-400" />
-                        View Info
-                    </button>
+                        <button
+                            onClick={() => { onView(); closeMenu(); }}
+                            className="w-full text-left px-3 py-2 text-xs font-black text-gray-700 hover:bg-red-50 hover:text-red-800 rounded-lg flex items-center gap-2 transition-colors cursor-pointer focus:outline-none uppercase tracking-wider"
+                        >
+                            <FaEye size={12} className="text-gray-400" />
+                            View Info
+                        </button>
 
-                    <button
-                        onClick={() => { onEdit(); closeMenu(); }}
-                        className="w-full text-left px-3 py-2 text-xs font-black text-gray-700 hover:bg-red-50 hover:text-red-800 rounded-lg flex items-center gap-2 transition-colors cursor-pointer focus:outline-none uppercase tracking-wider"
-                    >
-                        <FaPen size={10} className="text-gray-400" />
-                        Edit Data
-                    </button>
+                        <button
+                            onClick={() => { onEdit(); closeMenu(); }}
+                            className="w-full text-left px-3 py-2 text-xs font-black text-gray-700 hover:bg-red-50 hover:text-red-800 rounded-lg flex items-center gap-2 transition-colors cursor-pointer focus:outline-none uppercase tracking-wider"
+                        >
+                            <FaPen size={10} className="text-gray-400" />
+                            Edit Data
+                        </button>
 
-                    <div className="h-px bg-gray-100 my-0.5" />
+                        <div className="h-px bg-gray-100 my-0.5" />
 
-                    <button
-                        onClick={() => { onDelete(); closeMenu(); }}
-                        className="w-full text-left px-3 py-2 text-xs font-black text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2 transition-colors cursor-pointer focus:outline-none uppercase tracking-wider"
-                    >
-                        <FaTrashAlt size={11} />
-                        Delete
-                    </button>
-                </div>
+                        <button
+                            onClick={() => { onDelete(); closeMenu(); }}
+                            className="w-full text-left px-3 py-2 text-xs font-black text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2 transition-colors cursor-pointer focus:outline-none uppercase tracking-wider"
+                        >
+                            <FaTrashAlt size={11} />
+                            Delete
+                        </button>
+                    </div>
                 </>,
                 document.body
             )}

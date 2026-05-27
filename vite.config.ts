@@ -13,4 +13,10 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 1600,
   },
+  server: {
+    hmr: {
+      overlay: false,
+    },
+  },
+  logLevel: 'warn',
 })

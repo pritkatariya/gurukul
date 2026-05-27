@@ -1,6 +1,7 @@
 import React from "react";
 
-interface InputProps {
+// ✅ અહીંયા આપણે extend પણ કરીશું જેથી autoComplete સપોર્ટ થાય
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;
     icon?: React.ReactNode;
     type?: "text" | "password" | "email" | "number"; 
@@ -17,7 +18,8 @@ export default function Input({
     placeholder,
     className, 
     value, 
-    onChange
+    onChange,
+    ...rest
 }: InputProps) {
     return (
         <div className="group flex flex-col w-full gap-2 outline-none">
@@ -38,7 +40,8 @@ export default function Input({
                     value={value}
                     onChange={onChange}
                     placeholder={placeholder}
-                    className={`w-full h-14 pl-14 pr-4 focus:outline-none focus:ring-4 ring-red-50 text-sm rounded-2xl font-bold text-gray-700 shadow-sm transition-all border border-gray-200 focus:border-red-800 bg-gray-50/20 focus:bg-white ${className}`}
+                    {...rest} // 👈 આ લાઈન તમારા બહારથી મોકલેલા autoComplete="new-password" ને અહીંયા અસાઇન કરી દેશે
+                    className={`w-full h-14 pl-14 pr-4 focus:outline-none focus:ring-4 ring-red-50 text-sm rounded-2xl font-bold text-gray-700 shadow-sm transition-all border border-gray-200 focus:border-red-800 bg-gray-50/20 focus:bg-white ${className || ""}`}
                 />
             </div>
         </div>

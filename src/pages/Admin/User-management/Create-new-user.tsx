@@ -48,8 +48,10 @@ export default function CreateNewUser() {
         }
     }
 
+    // 🛠️ FIXED ROLE CHECK: અહીંયા SUPER_ADMIN અને SUPER-ADMIN બંને ચેક કરશે
+    const userRoleClean = loggedInUserRole.trim().toUpperCase();
     const isMainSuperAdmin =
-        userId === 123098 || loggedInUserRole.trim().toUpperCase() === "SUPER_ADMIN";
+        userId === 123098 || userRoleClean === "SUPER_ADMIN" || userRoleClean === "SUPER-ADMIN";
 
     const isRedirectedFromList = Boolean(nameFromUrl || suidFromUrl || deptIdFromUrl);
 
@@ -241,8 +243,6 @@ export default function CreateNewUser() {
                 dataToSend.append("existingImageUrl", imageFromUrl);
             }
 
-
-
             const response = await fetch(`${API_URL}/create/user`, {
                 method: "POST",
                 body: dataToSend,
@@ -320,8 +320,9 @@ export default function CreateNewUser() {
                 <div className="mx-auto mt-3 h-1.5 w-16 rounded-full bg-red-800" />
             </div>
 
+            {/* 🛠️ FIXED: અહીંયાથી "rounded-4xl" હટાવી દીધું છે, જે એરર આપતું હતું */}
             <motion.div
-                initial={{ opacity: 0, y: 15 }}rounded-4xl
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-7xl rounded-[2.5rem] border border-red-50 bg-white p-6 shadow-md md:p-10"
             >
@@ -377,6 +378,7 @@ export default function CreateNewUser() {
                             label="Username"
                             icon={<FaUser />}
                             placeholder="E.g. prit-123"
+                            autoComplete="username"
                             value={formData.username}
                             onChange={(event: any) =>
                                 setFormData({ ...formData, username: event.target.value })
@@ -388,6 +390,7 @@ export default function CreateNewUser() {
                             label="Password"
                             icon={<PiPasswordFill />}
                             placeholder="Enter secure password"
+                            autoComplete="new-password" // 👈 'C' કેપિટલ કરો
                             value={formData.password}
                             onChange={(event: any) =>
                                 setFormData({ ...formData, password: event.target.value })
