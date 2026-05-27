@@ -14,6 +14,9 @@ interface SectionItem {
     users_id: number[];
 }
 
+let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+
 export default function GmusicSection() {
     const [isOpenPopup, setIsOpenPopup] = useState(false);
     const [sectionList, setSectionList] = useState<SectionItem[]>([]);
@@ -45,7 +48,7 @@ export default function GmusicSection() {
         if (!deptId) return;
         try {
             setLoading(true);
-            const response = await fetch(`http://localhost:3000/sections?dept_id=${deptId}`);
+            const response = await fetch(`${API_URL}/sections?dept_id=${deptId}`);
             const result = await response.json();
 
             if (result.success) {

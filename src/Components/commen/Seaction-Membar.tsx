@@ -68,7 +68,6 @@ export default function SectionMember({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // 🔒 BULLETPROOF CRUD SECURITY: જો યુઝર નોર્મલ 'user' (સેક્શન હેડ) હોય તો તે ફક્ત જોઈ જ શકશે (Read-Only)
     const isReadOnly = isNormalUser;
 
     const handleViewSection = () => {

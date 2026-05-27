@@ -21,6 +21,9 @@ interface SectionCreateProps {
     departmentId: string | number;
 }
 
+let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+
 export default function SectionCreate({ onClick, departmentId }: SectionCreateProps) {
     // Form States
     const [sectionName, setSectionName] = useState("");
@@ -39,7 +42,7 @@ export default function SectionCreate({ onClick, departmentId }: SectionCreatePr
             setIsLoading(true);
             setErrorMsg("");
             try {
-                const response = await fetch("http://localhost:3000/user/alldata");
+                const response = await fetch(`${API_URL}/user/alldata`);
                 const data = await response.json();
 
                 if (data.success) {
@@ -92,7 +95,7 @@ export default function SectionCreate({ onClick, departmentId }: SectionCreatePr
                 users_id: [] 
             };
 
-            const response = await fetch("http://localhost:3000/sections", {
+            const response = await fetch(`${API_URL}/sections`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

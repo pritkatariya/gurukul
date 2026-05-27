@@ -18,6 +18,9 @@ interface AddMemberModalProps {
     onUpdate: () => void;
 }
 
+let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+
 export default function AddMemberModal({ sectionId, departmentId, currentUsers, onClose, onUpdate }: AddMemberModalProps) {
     const [allDeptUsers, setAllDeptUsers] = useState<User[]>([]);
     const [selectedUserId, setSelectedUserId] = useState("");
@@ -27,7 +30,7 @@ export default function AddMemberModal({ sectionId, departmentId, currentUsers, 
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await fetch("http://localhost:3000/user/alldata");
+                const response = await fetch(`${API_URL}/user/alldata`);
                 const data = await response.json();
                 
                 // ડેટાબેઝમાંથી આવતા ડેટાનું સેફ હેન્ડલિંગ
@@ -69,7 +72,7 @@ export default function AddMemberModal({ sectionId, departmentId, currentUsers, 
             const updatedUsers = [...currentUsers.map((id) => Number(id)), Number(selectedUserId)];
             
             // બેકએન્ડ API કોલ (PUT /sections/:id) જે ડેટાબેઝમાં એરે અપડેટ કરશે
-            const response = await fetch(`http://localhost:3000/sections/${sectionId}`, {
+            const response = await fetch(`${API_URL}/sections/${sectionId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ users_id: updatedUsers }),
