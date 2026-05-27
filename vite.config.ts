@@ -9,11 +9,16 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
     tailwindcss()
   ],
-  base: '/',  // આ ઉમેરો
+  base: './',
   build: {
     chunkSizeWarningLimit: 1600,
     assetsDir: 'assets',
     outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
   },
   server: {
     hmr: {

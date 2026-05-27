@@ -24,6 +24,7 @@ interface UserType {
 }
 
 type CategoryType = "admin" | "head" | "user";
+let API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export default function UserList() {
     const [allUsers, setAllUsers] = useState<any[]>([]);
@@ -55,7 +56,6 @@ export default function UserList() {
     ];
 
     const getApiUrl = () => {
-        let API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
         if (API_URL.endsWith("/")) API_URL = API_URL.slice(0, -1);
         return API_URL;
     };
@@ -183,7 +183,7 @@ export default function UserList() {
             const fetchGMusicUsers = async () => {
                 setIsLoadingUsers(true);
                 try {
-                    const response = await fetch("http://localhost:3000/user/alldata");
+                    const response = await fetch(`${API_URL}/user/alldata`);
                     const data = await response.json();
 
                     if (data.success) {
