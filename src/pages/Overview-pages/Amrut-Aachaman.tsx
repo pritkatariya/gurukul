@@ -111,34 +111,21 @@ export default function AmrutnuAchaman() {
 
         const data = await response.json();
 
-        if (
-          data.success &&
-          Array.isArray(data.images)
-        ) {
-          const formatted: GalleryImage[] =
-            data.images.map(
-              (img: ApiImage, index: number) => {
-                const createdDate = img.created_at
-                  ? new Date(img.created_at)
-                  : new Date();
+        const rawImages = Array.isArray(data.images) ? data.images : (Array.isArray(data.data) ? data.data : []);
 
-                return {
-                  src: img.url,
-                  title:
-                    img.title ||
-                    `Daily Wisdom ${index + 1}`,
-                  date:
-                    createdDate.toLocaleDateString(
-                      "en-GB"
-                    ),
-                  fullDate: createdDate
-                    .toISOString()
-                    .split("T")[0],
-                };
-              }
-            );
-
+        if (rawImages.length > 0) {
+          const formatted: GalleryImage[] = rawImages.map((img: ApiImage, index: number) => {
+            const createdDate = img.created_at ? new Date(img.created_at) : new Date();
+            return {
+              src: img.url,
+              title: img.title || `Daily Wisdom ${index + 1}`,
+              date: createdDate.toLocaleDateString("en-GB"),
+              fullDate: createdDate.toISOString().split("T")[0],
+            };
+          });
           setImages(formatted);
+        } else {
+          setImages([]);
         }
       } catch (error) {
         console.error(
