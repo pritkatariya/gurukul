@@ -325,34 +325,53 @@ export default function Notification({
         }
     };
 
-    const visibleLiveNotifications = liveDbNotifications.filter((item) => {
+    // અહી ફેરફાર છે: ડુપ્લીકેટ Welcome મેસેજ કાઢવાનું લોજિક
+    const visibleLiveNotifications = liveDbNotifications.reduce((acc: NotificationItem[], item: NotificationItem) => {
         const itemTitle = String(item.title || item.subject || "").toLowerCase();
         const itemType = String(item.notification_type || "").toLowerCase();
+        const isWelcome = itemType === "welcome" || itemTitle.includes("welcome");
 
+        let hasAccess = false;
+        
         if (hasControlAccess) {
-            return item.head_approved === true || itemType === "welcome" || itemTitle.includes("welcome");
-        }
-
-        if (isDeptHead) {
-            return (
+            hasAccess = item.head_approved === true || isWelcome;
+        } else if (isDeptHead) {
+            hasAccess = (
                 Number(item.department_id) === Number(userDeptId) ||
                 Number(item.user_id) === Number(userId) ||
-                itemType === "welcome" ||
-                itemTitle.includes("welcome")
+                isWelcome
             );
+        } else {
+            hasAccess = (Number(item.user_id) === Number(userId) || isWelcome);
         }
 
-        return (
-            Number(item.user_id) === Number(userId) ||
-            itemType === "welcome" ||
-            itemTitle.includes("welcome")
-        );
-    });
+        if (hasAccess) {
+            if (isWelcome) {
+                // એક જ યુઝર માટે બીજી વાર Welcome મેસેજ આવતો અટકાવો
+                const isDuplicate = acc.find(
+                    (existing) => 
+                        existing.user_id === item.user_id && 
+                        (String(existing.notification_type).toLowerCase() === "welcome" || String(existing.title || existing.subject || "").toLowerCase().includes("welcome"))
+                );
+                
+                if (!isDuplicate) {
+                    acc.push(item);
+                }
+            } else {
+                acc.push(item);
+            }
+        }
+        return acc;
+    }, []);
 
+    // અહી ફેરફાર છે: Super Admin માટે જૂના notifications અને નવા liveDbNotifications બંને બતાવવા
     const activeAdmitRequests = hasControlAccess
-        ? getFilteredNotifications(notifications).filter(
-            (item) => String(item.status || "").toLowerCase() === "pending"
-        )
+        ? [
+            ...getFilteredNotifications(notifications).filter(
+                (item) => String(item.status || "").toLowerCase() === "pending"
+            ),
+            ...getFilteredNotifications(visibleLiveNotifications)
+          ]
         : getFilteredNotifications(visibleLiveNotifications);
 
     const activeDeptRequests = deptNotifications.filter(

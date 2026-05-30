@@ -4,12 +4,13 @@ import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
+  // 'base' ને './' કરવાથી બધી એસેટ્સ સાપેક્ષ (relative) પાથથી લોડ થશે
+  base: './', 
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] }),
     tailwindcss()
   ],
-  base: '/',
   build: {
     chunkSizeWarningLimit: 1600,
     assetsDir: 'assets',
