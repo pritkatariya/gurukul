@@ -178,24 +178,36 @@ export default function Deshbord() {
         toolbar: { show: false },
         animations: { enabled: false }
       },
-      stroke: { curve: "smooth", width: 3, colors: ["#b91c1c"] },
-      markers: { size: 4, colors: ["#fff"], strokeColors: "#b91c1c", strokeWidth: 2 },
+      stroke: { curve: "smooth", width: 3, colors: ["#2563eb"] },
+      fill: {
+        type: "gradient",
+        gradient: {
+          shade: "light",
+          type: "vertical",
+          shadeIntensity: 0.3,
+          opacityFrom: 0.35,
+          opacityTo: 0.05,
+          stops: [0, 80, 100]
+        }
+      },
+      markers: { size: 4, colors: ["#fff"], strokeColors: "#2563eb", strokeWidth: 2 },
       grid: {
-        borderColor: "#f1f5f9",
+        borderColor: "#e2e8f0",
+        strokeDashArray: 4,
         xaxis: { lines: { show: false } },
         yaxis: { lines: { show: true } }
       },
       dataLabels: { enabled: false },
       xaxis: {
         categories: zeroWeeklyData.map((data) => data.day),
-        labels: { style: { colors: "#94a3b8", fontSize: "11px", fontWeight: 600 } },
+        labels: { style: { colors: "#64748b", fontSize: "12px" } },
         axisBorder: { show: false },
         axisTicks: { show: false }
       },
       yaxis: {
         min: 0,
         max: 100,
-        labels: { style: { colors: "#94a3b8", fontSize: "11px" } }
+        labels: { style: { colors: "#64748b", fontSize: "12px" } }
       },
       tooltip: { theme: "light" }
     }),
@@ -210,24 +222,36 @@ export default function Deshbord() {
         toolbar: { show: false },
         animations: { enabled: false }
       },
-      stroke: { curve: "smooth", width: 3, colors: ["#991b1b"] },
-      markers: { size: 4, colors: ["#fff"], strokeColors: "#991b1b", strokeWidth: 2 },
+      stroke: { curve: "smooth", width: 3, colors: ["#4338ca"] },
+      fill: {
+        type: "gradient",
+        gradient: {
+          shade: "light",
+          type: "vertical",
+          shadeIntensity: 0.35,
+          opacityFrom: 0.32,
+          opacityTo: 0.06,
+          stops: [0, 80, 100]
+        }
+      },
+      markers: { size: 4, colors: ["#fff"], strokeColors: "#4338ca", strokeWidth: 2 },
       grid: {
-        borderColor: "#f1f5f9",
+        borderColor: "#e2e8f0",
+        strokeDashArray: 4,
         xaxis: { lines: { show: false } },
         yaxis: { lines: { show: true } }
       },
       dataLabels: { enabled: false },
       xaxis: {
         categories: zeroMonthlyData.map((data) => data.month),
-        labels: { style: { colors: "#94a3b8", fontSize: "11px", fontWeight: 600 } },
+        labels: { style: { colors: "#64748b", fontSize: "12px" } },
         axisBorder: { show: false },
         axisTicks: { show: false }
       },
       yaxis: {
         min: 0,
         max: 100,
-        labels: { style: { colors: "#94a3b8", fontSize: "11px" } }
+        labels: { style: { colors: "#64748b", fontSize: "12px" } }
       },
       tooltip: { theme: "light" }
     }),
@@ -240,20 +264,18 @@ export default function Deshbord() {
   ];
 
   return (
-    <div className="min-h-screen w-full select-none bg-gray-50/50 p-4 md:p-8">
-      <div className="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="text-3xl font-black uppercase tracking-tight text-red-950">
-            Sevak Portal
-          </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Jai Swaminarayan, {userData.full_name}. Your dashboard is ready.
+    <div className="min-h-screen w-full bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mb-10 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <div className="max-w-2xl">
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Sevak Portal</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Jai Swaminarayan, {userData.full_name}. Your dashboard is prepared with quick insights and latest activity.
           </p>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3 rounded-2xl border border-red-100 bg-white px-4 py-2 text-sm font-bold text-gray-700 shadow-sm">
-            <FaCalendarCheck className="text-red-800" />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm">
+            <FaCalendarCheck className="text-slate-500" />
             <span>
               {new Date().toLocaleDateString("en-US", {
                 weekday: "long",
@@ -265,7 +287,7 @@ export default function Deshbord() {
 
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 rounded-2xl border border-red-100 bg-red-50 px-4 py-2 text-sm font-black uppercase tracking-wider text-red-800 transition-all duration-200 hover:bg-red-100 active:scale-95"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
             <FaSignOutAlt />
             Logout
@@ -273,10 +295,10 @@ export default function Deshbord() {
         </div>
       </div>
 
-      <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
-        <div className="relative flex w-full shrink-0 flex-col items-center overflow-hidden rounded-[2.5rem] border border-red-100 bg-white p-6 text-center shadow-md shadow-red-950/5 lg:w-[320px]">
-          <div className="relative mb-4 flex h-44 w-full items-center justify-center rounded-3xl border border-red-900/50 bg-linear-to-br from-red-900 via-red-950 to-stone-950 shadow-inner">
-            <div className="relative z-10 flex h-24 w-24 shrink-0 grow-0 select-none items-center justify-center overflow-hidden rounded-full border-b border-r border-black/30 border-l-2 border-t-2 bg-white/10 text-3xl text-white shadow-[12px_12px_24px_rgba(0,0,0,0.5)] backdrop-blur-md">
+      <div className="grid gap-6 xl:grid-cols-[320px_1fr]">
+        <div className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-3xl bg-slate-100 p-6 text-center">
+            <div className="mx-auto mb-5 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm">
               {userData.profile_image_url ? (
                 <img
                   src={userData.profile_image_url}
@@ -284,38 +306,26 @@ export default function Deshbord() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <FaUserAlt className="drop-shadow-[0_2px_5px_rgba(0,0,0,0.5)]" />
+                <FaUserAlt className="text-3xl text-slate-500" />
               )}
-
-              <div className="absolute left-3 top-1 h-2.5 w-1/2 rounded-full bg-white/20 blur-[0.5px]" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-slate-950">{userData.full_name}</h2>
+              <p className="mt-2 inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                {userRole}
+              </p>
             </div>
           </div>
 
-          <h2 className="text-xl font-black uppercase tracking-tight text-red-950">
-            {userData.full_name}
-          </h2>
-
-          <p className="mt-1.5 rounded-full bg-red-800 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
-            {userRole}
-          </p>
-
-          <div className="my-5 w-full space-y-3 border-t border-gray-100 pt-4 text-left">
+          <div className="space-y-4 border-t border-slate-200 pt-5">
             <InfoItem icon={<FaUserShield />} label="Username" value={userData.username || "-"} />
             <InfoItem icon={<FaBuilding />} label="Department" value={deptName} />
-            <InfoItem icon={<FaGraduationCap />} label="Standard (STD)" value={userData.std || "Main"} />
-            <InfoItem
-              icon={<FaHashtag />}
-              label="SUID"
-              value={userData.suid || "-"}
-            />
-            <InfoItem
-              icon={<FaHashtag />}
-              label="Roll Number"
-              value={String(userData.roll_number || "-")}
-            />
+            <InfoItem icon={<FaGraduationCap />} label="Standard" value={userData.std || "Main"} />
+            <InfoItem icon={<FaHashtag />} label="SUID" value={userData.suid || "-"} />
+            <InfoItem icon={<FaHashtag />} label="Roll number" value={String(userData.roll_number || "-")} />
             <InfoItem
               icon={<FaClock />}
-              label="Joined Date"
+              label="Joined date"
               value={
                 userData.joined_date
                   ? new Date(userData.joined_date).toLocaleDateString("en-GB")
@@ -324,86 +334,85 @@ export default function Deshbord() {
             />
           </div>
 
-          <div className="flex w-full items-center justify-between rounded-2xl border border-red-100/50 bg-red-50/40 p-4">
-            <div className="text-left">
-              <p className="flex items-center gap-1.5 text-xs font-black text-red-950">
-                <FaAward className="text-amber-500" /> Seva Score
-              </p>
-              <p className="mt-0.5 text-[10px] font-bold text-gray-400">
-                New account baseline
-              </p>
-            </div>
-
-            <div className="relative flex h-12 w-12 items-center justify-center text-xs font-black text-red-950">
-              <svg className="absolute h-full w-full -rotate-90">
-                <circle cx="24" cy="24" r="20" stroke="#fecdd3" strokeWidth="4" fill="transparent" />
-                <circle
-                  cx="24"
-                  cy="24"
-                  r="20"
-                  stroke="#991b1b"
-                  strokeWidth="4"
-                  fill="transparent"
-                  strokeDasharray={125}
-                  strokeDashoffset={125 - (125 * sevaScore) / 100}
-                />
-              </svg>
-              <span>{sevaScore}%</span>
+          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <FaAward className="text-indigo-600" />
+                  Seva score
+                </p>
+                <p className="mt-1 text-xs text-slate-500">New account baseline</p>
+              </div>
+              <div className="relative flex h-12 w-12 items-center justify-center">
+                <svg className="absolute h-full w-full -rotate-90">
+                  <circle cx="24" cy="24" r="20" stroke="#cbd5e1" strokeWidth="4" fill="transparent" />
+                  <circle
+                    cx="24"
+                    cy="24"
+                    r="20"
+                    stroke="#2563eb"
+                    strokeWidth="4"
+                    fill="transparent"
+                    strokeDasharray={125}
+                    strokeDashoffset={125 - (125 * sevaScore) / 100}
+                  />
+                </svg>
+                <span className="relative text-sm font-semibold text-slate-900">{sevaScore}%</span>
+              </div>
             </div>
           </div>
         </div>
-        <div className="flex w-full flex-1 flex-col gap-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+
+        <div className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
             <ChartCard
-              title="My Weekly Growth"
-              subtitle="Daily analysis from Monday to Sunday"
+              title="Weekly growth"
+              subtitle="Daily activity from Monday to Sunday"
               badge="0%"
-              icon={<FaChartBar className="text-red-800" />}
+              icon={<FaChartBar className="text-indigo-600" />}
               options={weeklyOptions}
               series={weeklySeries}
             />
-
             <ChartCard
-              title="My Monthly Growth"
-              subtitle="Tracking contribution graph over 5 months"
+              title="Monthly growth"
+              subtitle="Contribution trend over 5 months"
               badge="+0%"
-              icon={<FaChartLine className="text-red-800" />}
+              icon={<FaChartLine className="text-indigo-600" />}
               badgeIcon={<FaArrowUp />}
               options={monthlyOptions}
               series={monthlySeries}
             />
           </div>
 
-          <div className="rounded-4xl border border-gray-100 bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-lg font-black uppercase tracking-tight text-red-950">
-              Your Recent System Logs
-            </h3>
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-slate-950">Recent system logs</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Latest notifications and activity for your account.
+            </p>
 
             {notifications.length === 0 ? (
-              <div className="space-y-4">
-                <LogItem title="Account created on Gurukul System" subtitle="New account baseline created" />
-                <LogItem title={`Department assigned to ${deptName}`} subtitle="Synced from database profile" />
+              <div className="mt-6 space-y-4">
+                <LogItem title="Account created on Gurukul system" subtitle="New account baseline created." />
+                <LogItem title={`Department assigned to ${deptName}`} subtitle="Synced from database profile." />
               </div>
             ) : (
-              <div className="max-h-60 space-y-4 overflow-y-auto scrollbar-hide">
+              <div className="mt-6 space-y-4 max-h-64 overflow-y-auto">
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className="flex items-center gap-4 rounded-xl border border-gray-100/50 bg-gray-50 p-3"
+                    className="rounded-3xl border border-slate-200 bg-slate-50 p-4"
                   >
-                    <FaClock className="shrink-0 text-red-800" />
-                    <div>
-                      <p className="text-xs font-black uppercase tracking-tight text-slate-800">
-                        {notification.title}
-                      </p>
-                      <p className="mt-0.5 text-[11px] font-medium text-gray-500">
-                        {notification.message}
-                      </p>
-                      <p className="mt-1 text-[9px] font-bold text-gray-400">
-                        {notification.created_at
-                          ? new Date(notification.created_at).toLocaleString("en-GB")
-                          : ""}
-                      </p>
+                    <div className="flex items-start gap-4">
+                      <FaClock className="mt-1 text-slate-500" />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{notification.title}</p>
+                        <p className="mt-1 text-sm text-slate-600">{notification.message}</p>
+                        <p className="mt-2 text-xs text-slate-400">
+                          {notification.created_at
+                            ? new Date(notification.created_at).toLocaleString("en-GB")
+                            : ""}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -418,11 +427,11 @@ export default function Deshbord() {
 
 function InfoItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="flex items-center gap-4 text-slate-700">
-      <span className="shrink-0 text-lg text-red-800">{icon}</span>
+    <div className="flex items-center gap-3 text-slate-700">
+      <span className="shrink-0 text-lg text-slate-500">{icon}</span>
       <div>
-        <p className="text-[10px] font-bold uppercase text-gray-400">{label}</p>
-        <p className="text-sm font-black">{value}</p>
+        <p className="text-xs font-medium uppercase tracking-[0.08em] text-slate-400">{label}</p>
+        <p className="text-sm font-semibold text-slate-900">{value}</p>
       </div>
     </div>
   );
@@ -430,11 +439,13 @@ function InfoItem({ icon, label, value }: { icon: React.ReactNode; label: string
 
 function LogItem({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="flex items-center gap-4 rounded-xl bg-gray-50 p-3">
-      <FaClock className="shrink-0 text-red-800" />
-      <div>
-        <p className="text-xs font-bold text-slate-800">{title}</p>
-        <p className="text-[10px] text-gray-400">{subtitle}</p>
+    <div className="rounded-3xl bg-slate-50 p-4">
+      <div className="flex items-center gap-3">
+        <FaClock className="text-slate-500" />
+        <div>
+          <p className="text-sm font-semibold text-slate-900">{title}</p>
+          <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
+        </div>
       </div>
     </div>
   );
@@ -458,22 +469,23 @@ export function ChartCard({
   series: ApexAxisChartSeries;
 }) {
   return (
-    <div className="flex flex-col rounded-4xl border border-red-100 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h2 className="flex items-center gap-2 text-base font-black uppercase tracking-tight text-red-950">
-            {icon} {title}
+    <div className="flex flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-2">
+          <h2 className="flex items-center gap-2 text-base font-semibold text-slate-950">
+            {icon}
+            {title}
           </h2>
-          <p className="text-[11px] font-medium text-gray-400">{subtitle}</p>
+          <p className="text-sm text-slate-500">{subtitle}</p>
         </div>
 
-        <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
           {badgeIcon}
           {badge}
         </span>
       </div>
 
-      <div className="mt-2 h-48 w-full overflow-hidden">
+      <div className="h-48 w-full overflow-hidden">
         <ReactApexChart options={options} series={series} type="line" height={190} />
       </div>
     </div>

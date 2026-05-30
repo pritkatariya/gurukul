@@ -7,11 +7,13 @@ import {
     FaBars,
     FaTimes,
     FaFileSignature,
+    FaBirthdayCake,
 } from "react-icons/fa";
 import Logo from "../assets/gurukul logo.png";
 import { toast } from "sonner";
 import Notification from "../Components/commen/Notification";
 import Application from "./Application";
+import BirthdayCard, { type BirthdayStudent } from "../Components/Cards/Birthday-Card";
 
 interface HeaderProps {
     onMenuClick?: () => void;
@@ -35,6 +37,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
     const [openNotification, setOpenNotification] = useState(false);
     const [openFullPopup, setOpenFullPopup] = useState(false);
     const [openApplicationForm, setOpenApplicationForm] = useState(false);
+    const [isBirthdayModalOpen, setBirthdayModalOpen] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedLang, setSelectedLang] = useState("English");
     const [pendingRequests, setRequests] = useState<any[]>([]);
@@ -75,6 +78,15 @@ export default function Header({ onMenuClick }: HeaderProps) {
         roleCode === "head1029";
 
     const userDepartmentId = Number(userData?.department_id) || 0;
+
+    const todayBirthdayStudent: BirthdayStudent = {
+        name: "Katariya Prit RajendraBhai",
+        className: "12-A",
+        department: "Higher Secondary",
+        dob: "19/04/2026",
+        image: "https://sgrs.in/uploads/student//a12dd984ceffb9ec7f7392331304485e.JPG",
+    };
+    const birthdayCount = 1;
 
     const fetchAllAlertSystemData = async () => {
         try {
@@ -150,7 +162,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
     useEffect(() => {
         fetchAllAlertSystemData();
-
         const interval = window.setInterval(fetchAllAlertSystemData, 15000);
         return () => window.clearInterval(interval);
     }, [userDepartmentId, userRole, userData?.id]);
@@ -182,7 +193,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 } else {
                     toast.error(data.message || "Approval failed");
                 }
-
                 return;
             }
 
@@ -237,7 +247,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 } else {
                     toast.error(data.message || "Decline failed");
                 }
-
                 return;
             }
 
@@ -270,7 +279,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
-
             if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
                 setOpenNotification(false);
             }
@@ -281,8 +289,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
     }, []);
 
     const languages = ["ગુજરાતી", "English", "हिन्दी"];
-    const showLiveBadge =
-        pendingRequests.length > 0 && (isSuperAdmin || isDepartmentHead || !hasViewedNotification);
+    const showLiveBadge = pendingRequests.length > 0 && (isSuperAdmin || isDepartmentHead || !hasViewedNotification);
 
     return (
         <div className="relative flex h-full w-full items-center justify-between gap-2 rounded-2xl bg-red-800 px-2 py-2 shadow-md select-none sm:px-3">
@@ -319,6 +326,20 @@ export default function Header({ onMenuClick }: HeaderProps) {
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 text-amber-800 shadow-sm transition-all hover:bg-amber-100 active:scale-95 sm:h-11 sm:w-11"
                 >
                     <FaFileSignature size={14} />
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => setBirthdayModalOpen(true)}
+                    title="Today's Birthdays"
+                    className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-red-200 bg-white text-red-600 shadow-sm transition-all hover:bg-red-50 hover:scale-110 active:scale-95 sm:h-11 sm:w-11"
+                >
+                    <FaBirthdayCake size={18} />
+                    {birthdayCount > 0 && (
+                        <span className="absolute -right-1 -top-1 flex h-[18px] w-[18px] items-center justify-center rounded-full border-[1.5px] border-white bg-red-600 text-[9px] font-bold text-white shadow-sm">
+                            {birthdayCount}
+                        </span>
+                    )}
                 </button>
 
                 <div className="relative shrink-0" ref={notificationRef}>
@@ -476,6 +497,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 onDecline={handleDecline}
                 onApproveDept={async () => {}}
                 onDeclineDept={async () => {}}
+            />
+
+            <BirthdayCard
+                isOpen={isBirthdayModalOpen}
+                onClose={() => setBirthdayModalOpen(false)}
+                student={todayBirthdayStudent}
             />
         </div>
     );
